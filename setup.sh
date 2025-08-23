@@ -43,7 +43,11 @@ if [ "$(uname)" == "Darwin" ]; then # osx
     #brew install llvm@8
     brew install llvm
 else #linux
-    sudo apt-get update
+    # fix: Package vulkan-utils not found is displayed
+    # https://github.com/microsoft/AirSim/issues/4866
+    wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+    sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+    sudo apt update
     sudo apt-get -y install --no-install-recommends \
         lsb-release \
         rsync \
