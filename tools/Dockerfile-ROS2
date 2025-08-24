@@ -1,11 +1,16 @@
-FROM ros:foxy-ros-base
+FROM ros:humble-ros-base
 
 RUN     apt-get update &&\
         apt-get install -y\
         apt-utils \
-        gcc-8 g++-8 \
+        gcc-11 g++-11 \
         ros-$ROS_DISTRO-tf2-sensor-msgs ros-$ROS_DISTRO-tf2-geometry-msgs ros-$ROS_DISTRO-mavros* \
         ros-$ROS_DISTRO-vision-opencv ros-$ROS_DISTRO-image-transport \
+        ros-$ROS_DISTRO-rqt ros-$ROS_DISTRO-rqt-common-plugins \
+        ros-$ROS_DISTRO-rqt-graph ros-$ROS_DISTRO-rqt-console ros-$ROS_DISTRO-rqt-tf-tree \
+        ros-$ROS_DISTRO-rosbridge-server ros-$ROS_DISTRO-rviz2 \
+        ros-$ROS_DISTRO-async-web-server-cpp ros-$ROS_DISTRO-cv-bridge \
+        ros-$ROS_DISTRO-web-video-server \
         libyaml-cpp-dev &&\
         echo 'source /opt/ros/$ROS_DISTRO/setup.bash' >> ~/.bashrc &&\
         rm -rf /var/lib/apt/lists/* &&\
