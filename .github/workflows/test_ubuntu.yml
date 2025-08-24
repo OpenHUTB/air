@@ -30,12 +30,12 @@ jobs:
       #     cd Unity
       #     ./build.sh
 
-      - name: Build ROS Wrapper
-        run: |
-          ./tools/install_ros_deps.sh
-          source /opt/ros/*/setup.bash
-          cd ros
-          catkin build -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8
+      # - name: Build ROS Wrapper
+      #   run: |
+      #     ./tools/install_ros_deps.sh
+      #     source /opt/ros/*/setup.bash
+      #     cd ros
+      #     catkin build -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8
       
       - name: Build ROS2 Wrapper
         if: matrix.os == 'ubuntu-22.04'
