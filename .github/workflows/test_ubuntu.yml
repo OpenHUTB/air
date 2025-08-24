@@ -35,7 +35,7 @@ jobs:
           
       - name: Build GazeboDrone
         run: |
-          sudo apt-get install -qq gazebo gcc-11 g++-11
+          sudo apt-get install -qq ros-humble-gazebo-ros gcc-11 g++-11
           ./clean.sh && ./build.sh --gcc
           cd GazeboDrone
           mkdir build && cd build
