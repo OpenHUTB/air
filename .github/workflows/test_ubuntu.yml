@@ -24,11 +24,11 @@ jobs:
         run: |
           ./build.sh
 
-      - name: Unity Build
-        run: |
-          sudo apt-get install libboost-all-dev make
-          cd Unity
-          ./build.sh
+      # - name: Unity Build
+      #   run: |
+      #     sudo apt-get install libboost-all-dev make
+      #     cd Unity
+      #     ./build.sh
 
       - name: Build ROS Wrapper
         run: |
