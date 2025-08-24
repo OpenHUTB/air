@@ -5,10 +5,13 @@
 set -x
 
 DISTRO="$(lsb_release -sc)"
+echo $DISTRO
+# Ubuntu 20.04 focal
+# Ubuntu 22.04 jammy
 if [[ "$DISTRO" == "focal" ]]; then
-    ROS_DISTRO="galactic"
+    ROS_DISTRO="humble"
 else
-    echo "ROS2 support only ubuntu focal"
+    echo "ROS2 support only ubuntu jammy"
     exit 1
 fi
 

@@ -24,19 +24,6 @@ jobs:
         run: |
           ./build.sh
 
-      # - name: Unity Build
-      #   run: |
-      #     sudo apt-get install libboost-all-dev make
-      #     cd Unity
-      #     ./build.sh
-
-      # - name: Build ROS Wrapper
-      #   run: |
-      #     ./tools/install_ros_deps.sh
-      #     source /opt/ros/*/setup.bash
-      #     cd ros
-      #     catkin build -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8
-      
       - name: Build ROS2 Wrapper
         if: matrix.os == 'ubuntu-22.04'
         run: |
@@ -44,13 +31,13 @@ jobs:
           ./tools/install_ros2_deps.sh
           source /opt/ros/*/setup.bash
           cd ros2
-          colcon build --cmake-args -DCMAKE_C_COMPILER=gcc-8 --cmake-args -DCMAKE_CXX_COMPILER=g++-8
+          colcon build --cmake-args -DCMAKE_C_COMPILER=gcc-11 --cmake-args -DCMAKE_CXX_COMPILER=g++-8
           
       - name: Build GazeboDrone
         run: |
-          sudo apt-get install -qq libgazebo9-dev gcc-8 g++-8
+          sudo apt-get install -qq libgazebo9-dev gcc-11 g++-11
           ./clean.sh && ./build.sh --gcc
           cd GazeboDrone
           mkdir build && cd build
-          cmake -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 ..
+          cmake -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11 ..
           make
