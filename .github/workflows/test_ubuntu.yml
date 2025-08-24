@@ -39,5 +39,6 @@ jobs:
           ./clean.sh && ./build.sh --gcc
           cd GazeboDrone
           mkdir build && cd build
+          export LDFLAGS="-Wl,--copy-dt-needed-entries"
           cmake -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11 ..
           make
