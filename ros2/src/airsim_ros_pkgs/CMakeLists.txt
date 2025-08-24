@@ -22,6 +22,7 @@ find_package(rosidl_typesupport_cpp REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(airsim_interfaces REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(mavros REQUIRED)
 
 set(AIRSIM_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../)
 
@@ -34,7 +35,7 @@ set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra -Wnoexcept -Wstrict-null-sentinel")
 set(CXX_EXP_LIB "-nostdinc++ -I/usr/include/c++/8 -I/usr/include/x86_64-linux-gnu/c++/8 -nodefaultlibs 
 -l/usr/lib/x86_64-linux-gnu/libc++.so -l/usr/lib/x86_64-linux-gnu/libc++abi.so
 -lm -lc -lgcc_s -lgcc
--lstdc++fs -fmax-errors=10")
+-fmax-errors=10")
 set(RPC_LIB_INCLUDES " ${AIRSIM_ROOT}/external/rpclib/rpclib-2.3.0/include")
 set(RPC_LIB rpc)
 message(STATUS "found RPC_LIB_INCLUDES=${RPC_LIB_INCLUDES}")
@@ -46,6 +47,9 @@ set(INCLUDE_DIRS include
   ${AIRSIM_ROOT}/MavLinkCom/include
   ${AIRSIM_ROOT}/MavLinkCom/common_utils
   ${OpenCV_INCLUDE_DIRS}
+  /opt/ros/humble/include
+  /opt/ros/humble/include/tf2
+  /opt/ros/humble/include/mavros_msgs
   )
 include_directories(${INCLUDE_DIRS})
 
@@ -59,6 +63,9 @@ ament_target_dependencies(pd_position_controller_simple
   nav_msgs
   geometry_msgs
   airsim_interfaces
+  tf2
+  tf2_geometry_msgs
+  mavros_msgs
 )
 
 add_library(airsim_ros src/airsim_ros_wrapper.cpp)
@@ -70,8 +77,12 @@ ament_target_dependencies(airsim_ros
   nav_msgs
   image_transport
   tf2_ros
+  tf2
+  tf2_geometry_msgs
+  mavros_msgs
   cv_bridge
   airsim_interfaces
+  std_srvs
 )
 
 add_executable(airsim_node src/airsim_node.cpp)
@@ -128,6 +139,7 @@ ament_export_dependencies(ament_cmake)
 ament_export_dependencies(std_msgs)
 ament_export_dependencies(rosidl_default_runtime)
 ament_export_dependencies(airsim_interfaces)
+ament_export_dependencies(mavros)
 
 ament_export_include_directories(${INCLUDE_DIRS})
 ament_export_libraries(airsim_settings_parser pd_position_controller_simple
