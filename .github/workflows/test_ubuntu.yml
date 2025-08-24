@@ -13,8 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # fix: cannot find -lunwind: No such file or directory
+      # https://blog.csdn.net/weixin_52000358/article/details/146281075
       - name: Setup
-        run: ./setup.sh
+        run: |
+          sudo apt-get -y install libunwind-dev libstdc++-12-dev
+          ./setup.sh
 
       - name: Build AirLib
         run: ./build.sh
