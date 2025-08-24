@@ -21,11 +21,12 @@ jobs:
           ./setup.sh
 
       - name: Build AirLib
-        run: ./build.sh
+        run: |
+          ./build.sh
 
       - name: Unity Build
         run: |
-          sudo apt-get install libboost-all-dev
+          sudo apt-get install libboost-all-dev make
           cd Unity
           ./build.sh
 
