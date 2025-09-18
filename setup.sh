@@ -90,7 +90,7 @@ if [ "$(uname)" == "Darwin" ]; then # osx
     else
         brew unlink cmake  # remove cmake 4.1.1
         brew remove cmake
-        brew remove cmake
+        brew install cmake
         echo "Already have good version of cmake: $cmake_ver"
     fi
 
