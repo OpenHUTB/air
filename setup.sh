@@ -88,6 +88,9 @@ if [ "$(uname)" == "Darwin" ]; then # osx
     if version_less_than_equal_to "$cmake_ver" "$MIN_CMAKE_VERSION"; then
         brew install cmake  # should get cmake 3.8
     else
+        brew unlink cmake  # remove cmake 4.1.1
+        brew remove cmake
+        brew remove cmake
         echo "Already have good version of cmake: $cmake_ver"
     fi
 
