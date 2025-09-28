@@ -120,10 +120,10 @@ REM //---------- Build rpclib ------------
 ECHO Starting cmake to build rpclib...
 IF NOT EXIST external\rpclib\%RPC_VERSION_FOLDER%\build mkdir external\rpclib\%RPC_VERSION_FOLDER%\build
 cd external\rpclib\%RPC_VERSION_FOLDER%\build
-if exist "%programfiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (
-    cmake -G"Visual Studio 17 2022" ..
-) else (
+if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" (
     cmake -G"Visual Studio 16 2019" ..
+) else (
+    cmake -G"Visual Studio 17 2022" ..
 )
 
 if "%buildMode%" == "" (
