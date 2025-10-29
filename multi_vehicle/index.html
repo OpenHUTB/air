@@ -362,7 +362,7 @@
 <li><code>vehicle_type</code>: Type of vehicle, e.g. "simpleflight". Currently only SimpleFlight, PhysXCar, ComputerVision are supported, in their respective SimModes.
                   Other vehicle types including PX4 and ArduPilot-related aren't supported</li>
 <li><code>pose</code>: Initial pose of the vehicle</li>
-<li><code>pawn_path</code>: Vehicle blueprint path, default empty wbich uses the default blueprint for the vehicle type</li>
+<li><code>pawn_path</code>: Vehicle blueprint path, default empty which uses the default blueprint for the vehicle type</li>
 </ul>
 <p>Returns: <code>bool</code> Whether vehicle was created</p>
 <p>The usual APIs can be used to control and interact with the vehicle once created, with the <code>vehicle_name</code> parameter. Specifying other settings such as additional cameras, etc. isn't possible currently, a future enhancement could be passing JSON string of settings for the vehicle. It also works with the <code>listVehicles()</code> API described above, so the vehicles spawned would be included in the list.</p>
