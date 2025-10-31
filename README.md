@@ -1,157 +1,132 @@
-# Welcome to AirSim
+# 欢迎来到低空模拟器
 
-AirSim is a simulator for drones, cars and more, built on [Unreal Engine](https://www.unrealengine.com/) (we now also have an experimental [Unity](https://unity3d.com/) release). It is open-source, cross platform, and supports software-in-the-loop simulation with popular flight controllers such as PX4 & ArduPilot and hardware-in-loop with PX4 for physically and visually realistic simulations. It is developed as an Unreal plugin that can simply be dropped into any Unreal environment. Similarly, we have an experimental release for a Unity plugin.
+Air 是一款基于[模拟器引擎](https://github.com/OpenHUTB/engine)的无人机、汽车等载具的低空模拟器。它是开源的、跨平台的，支持与 PX4 和 ArduPilot 等主流飞行控制器进行软件在环（Software-In-the-Loop, SIL）仿真，也支持与 PX4 进行硬件在环（Hardware-In-Loop, HIL）仿真，从而实现物理和视觉上都高度逼真的模拟。它以引擎插件的形式开发，可以直接集成到任何虚幻引擎环境中。同样，我们也将 Air 集成到[人车模拟器](https://github.com/OpenHUTB/hutb) 中。
 
-Our goal is to develop AirSim as a platform for AI research to experiment with deep learning, computer vision and reinforcement learning algorithms for autonomous vehicles. For this purpose, AirSim also exposes APIs to retrieve data and control vehicles in a platform independent way.
+我们的目标是将 Air 开发成一个人工智能研究平台，用于试验深度学习、计算机视觉和强化学习算法在无人机、汽车等载具中的应用。为此，AirSim 还提供了 API，以便以平台无关的方式获取数据和控制载具。
 
-**Check out the quick 1.5 minute demo**
+**观看时长 1.5 分钟的快速演示**
 
-Drones in AirSim
+Air 中的无人机
 
 [![AirSim Drone Demo Video](docs/images/demo_video.png)](https://youtu.be/-WfTr1-OBGQ)
 
-Cars in AirSim
+Air 中的汽车
 
 [![AirSim Car Demo Video](docs/images/car_demo_video.png)](https://youtu.be/gnz1X3UNM5Y)
 
 
-## How to Get It
+## 如何获得它
 
 ### Windows
 [![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_windows.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_windows.yml)
-* [Download binaries](https://github.com/OpenHUTB/air/releases)
-* [Build it](https://microsoft.github.io/AirSim/build_windows)
+* [下载可执行文件](https://github.com/OpenHUTB/air/releases)
+* [构建它](https://openhutb.github.io/air_doc/build_windows/)
 
 ### Linux
 [![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_ubuntu.yml)
-* [Download binaries](https://github.com/OpenHUTB/air/releases)
-* [Build it](https://microsoft.github.io/AirSim/build_linux)
+* [下载可执行文件](https://github.com/OpenHUTB/air/releases)
+* [构建它](https://openhutb.github.io/air_doc/build_linux/)
 
 ### macOS
 [![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_macos.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_macos.yml)
-* [Build it](https://microsoft.github.io/AirSim/build_macos)
+* [构建它](https://openhutb.github.io/air_doc/build_macos/)
 
-For more details, see the [use precompiled binaries](docs/use_precompiled.md) document. 
+更多详情请参阅[使用预编译二进制文件](https://openhutb.github.io/air_doc/use_precompiled/)的文档。
 
-## How to Use It
+## 如何使用它
 
-### Documentation
+### 文档
 
-View our [detailed documentation](https://microsoft.github.io/AirSim/) on all aspects of AirSim.
+查看我们关于 Air 各个方面的[详细文档](https://openhutb.github.io/air_doc/)。
 
-### Manual drive
+### 手动驾驶
 
-If you have remote control (RC) as shown below, you can manually control the drone in the simulator. For cars, you can use arrow keys to drive manually.
+如果您拥有如下图所示的遥控器（Remote Control, RC），则可以在模拟器中手动控制无人机。对于汽车，您可以使用方向键手动驾驶。
 
-[More details](https://microsoft.github.io/AirSim/remote_control)
+[更多详细信息](https://openhutb.github.io/air_doc/remote_control/)
 
 ![record screenshot](docs/images/AirSimDroneManual.gif)
 
 ![record screenshot](docs/images/AirSimCarManual.gif)
 
 
-### Programmatic control
+### 程序控制
 
-AirSim exposes APIs so you can interact with the vehicle in the simulation programmatically. You can use these APIs to retrieve images, get state, control the vehicle and so on. The APIs are exposed through the RPC, and are accessible via a variety of languages, including C++, Python, C# and Java.
+Air 提供 API，方便您以编程方式与模拟中的载具进行交互。您可以使用这些 API 获取图像、状态、控制载具等。这些 API 通过 RPC 公开，并支持多种编程语言，包括 C++、Python、C# 和 Java。
 
-These APIs are also available as part of a separate, independent cross-platform library, so you can deploy them on a companion computer on your vehicle. This way you can write and test your code in the simulator, and later execute it on the real vehicles. Transfer learning and related research is one of our focus areas.
+这些 API 也包含在一个独立的跨平台库中，因此您可以将其部署在载具上的配套计算机上。这样，您就可以在模拟器中编写和测试代码，然后再在实际载具上执行。迁移学习及相关研究是我们重点关注的领域之一。
 
-Note that you can use [SimMode setting](https://microsoft.github.io/AirSim/settings#simmode) to specify the default vehicle or the new [ComputerVision mode](https://microsoft.github.io/AirSim/image_apis#computer-vision-mode-1) so you don't get prompted each time you start AirSim.
+请注意，您可以使用 [SimMode 设置](https://openhutb.github.io/air_doc/settings/#simmode) 来指定默认载具或新的 [ComputerVision 模式](https://openhutb.github.io/air_doc/image_apis/#computer-vision-mode-1) ，这样每次启动 Air 时就不会出现提示。
 
-[More details](https://microsoft.github.io/AirSim/apis)
+[更多详细信息](https://microsoft.github.io/AirSim/apis)
 
-### Gathering training data
+### 收集训练数据
 
-There are two ways you can generate training data from AirSim for deep learning. The easiest way is to simply press the record button in the lower right corner. This will start writing pose and images for each frame. The data logging code is pretty simple and you can modify it to your heart's content.
+您可以通过两种方式从 Air 生成深度学习的训练数据。最简单的方法是直接按下右下角的录制按钮。这将开始记录每一帧的姿态和图像。数据记录代码非常简单，您可以根据需要进行修改。
 
 ![record screenshot](docs/images/record_data.png)
 
-A better way to generate training data exactly the way you want is by accessing the APIs. This allows you to be in full control of how, what, where and when you want to log data.
+生成符合您需求的训练数据的更佳方法是通过访问 API。这样，您可以完全掌控数据的记录方式、内容、地点和时间。
 
-### Computer Vision mode
+### 计算机视觉模式
 
-Yet another way to use AirSim is the so-called "Computer Vision" mode. In this mode, you don't have vehicles or physics. You can use the keyboard to move around the scene, or use APIs to position available cameras in any arbitrary pose, and collect images such as depth, disparity, surface normals or object segmentation.
+使用 Air 的另一种方式是所谓的“计算机视觉(Computer Vision)”模式。在此模式下，没有载具或物理效果。您可以使用键盘在场景中移动，或使用 API 将可用摄像头放置在任意位置，并采集深度、视差、表面法线或物体分割等图像。
 
-[More details](https://microsoft.github.io/AirSim/image_apis)
+[更多详细信息](https://openhutb.github.io/air_doc/image_apis/)
 
-### Weather Effects
+### 天气效果
 
-Press F10 to see various options available for weather effects. You can also control the weather using [APIs](https://microsoft.github.io/AirSim/apis#weather-apis). Press F1 to see other options available.
+按 F10 键可查看各种天气效果选项。您还可以使用 [APIs](https://openhutb.github.io/air_doc/apis/#weather-apis) 控制天气。按 F1 键可查看其他可用选项。
 
 ![record screenshot](docs/images/weather_menu.png)
 
-## Tutorials
+## 教程
 
-- [Video - Setting up AirSim with Pixhawk Tutorial](https://youtu.be/1oY8Qu5maQQ) by Chris Lovett
-- [Video - Using AirSim with Pixhawk Tutorial](https://youtu.be/HNWdYrtw3f0) by Chris Lovett
-- [Video - Using off-the-self environments with AirSim](https://www.youtube.com/watch?v=y09VbdQWvQY) by Jim Piavis
-- [Webinar - Harnessing high-fidelity simulation for autonomous systems](https://note.microsoft.com/MSR-Webinar-AirSim-Registration-On-Demand.html) by Sai Vemprala
-- [Reinforcement Learning with AirSim](https://microsoft.github.io/AirSim/reinforcement_learning) by Ashish Kapoor
-- [The Autonomous Driving Cookbook](https://aka.ms/AutonomousDrivingCookbook) by Microsoft Deep Learning and Robotics Garage Chapter
-- [Using TensorFlow for simple collision avoidance](https://github.com/simondlevy/AirSimTensorFlow) by Simon Levy and WLU team
+- [视频 - 使用 Pixhawk 设置 AirSim 教程](https://youtu.be/1oY8Qu5maQQ) 
+- [视频 - 使用 AirSim 和 Pixhawk 的教程](https://youtu.be/HNWdYrtw3f0) 
+- [视频 - 在 AirSim 中使用现成的环境](https://www.youtube.com/watch?v=y09VbdQWvQY) 
+- [网络研讨会 - 利用高保真仿真实现自主系统](https://note.microsoft.com/MSR-Webinar-AirSim-Registration-On-Demand.html) 
+- [使用 AirSim 进行强化学习](https://microsoft.github.io/AirSim/reinforcement_learning) 
+- [自动驾驶烹饪手册](https://aka.ms/AutonomousDrivingCookbook) 
+- [使用 TensorFlow 实现简单的避障](https://github.com/simondlevy/AirSimTensorFlow) 
 
-## Participate
+## 参与
 
-### Paper
+### 贡献
 
-More technical details are available in [AirSim paper (FSR 2017 Conference)](https://arxiv.org/abs/1705.05065). Please cite this as:
-```
-@inproceedings{airsim2017fsr,
-  author = {Shital Shah and Debadeepta Dey and Chris Lovett and Ashish Kapoor},
-  title = {AirSim: High-Fidelity Visual and Physical Simulation for Autonomous Vehicles},
-  year = {2017},
-  booktitle = {Field and Service Robotics},
-  eprint = {arXiv:1705.05065},
-  url = {https://arxiv.org/abs/1705.05065}
-}
-```
+如果您想了解可以贡献力量的领域，请查看 [未解决的问题](https://github.com/OpenHUTB/air/issues) 。
 
-### Contribute
-
-Please take a look at [open issues](https://github.com/OpenHUTB/air/issues) if you are looking for areas to contribute to.
-
-* [More on AirSim design](https://microsoft.github.io/AirSim/design)
-* [More on code structure](https://microsoft.github.io/AirSim/code_structure)
-* [Contribution Guidelines](CONTRIBUTING.md)
-
-### Who is Using AirSim?
-
-We are maintaining a [list](https://microsoft.github.io/AirSim/who_is_using) of a few projects, people and groups that we are aware of. If you would like to be featured in this list please [make a request here](https://github.com/OpenHUTB/air/issues).
-
-## Contact
-
-Join our [GitHub Discussions group](https://github.com/OpenHUTB/air/discussions) to stay up to date or ask any questions.
-
-We also have an AirSim group on [Facebook](https://www.facebook.com/groups/1225832467530667/). 
+* [关于 Air 设计的更多信息](https://openhutb.github.io/air_doc/design/)
+* [关于代码结构的更多信息](https://openhutb.github.io/air_doc/code_structure/)
+* [贡献指南](CONTRIBUTING.md)
 
 
-## What's New
+## 最新内容
 
-* [Cinematographic Camera](https://github.com/microsoft/AirSim/pull/3949)
-* [ROS2 wrapper](https://github.com/microsoft/AirSim/pull/3976)
-* [API to list all assets](https://github.com/microsoft/AirSim/pull/3940)
+* [电影摄影机](https://github.com/microsoft/AirSim/pull/3949)
+* [ROS2 包装器](https://github.com/microsoft/AirSim/pull/3976)
+* [列出所有资产的 API](https://github.com/microsoft/AirSim/pull/3940)
 * [movetoGPS API](https://github.com/microsoft/AirSim/pull/3746)
-* [Optical flow camera](https://github.com/microsoft/AirSim/pull/3938)
+* [光流相机](https://github.com/microsoft/AirSim/pull/3938)
 * [simSetKinematics API](https://github.com/microsoft/AirSim/pull/4066)
-* [Dynamically set object textures from existing UE material or texture PNG](https://github.com/microsoft/AirSim/pull/3992)
-* [Ability to spawn/destroy lights and control light parameters](https://github.com/microsoft/AirSim/pull/3991)
-* [Support for multiple drones in Unity](https://github.com/microsoft/AirSim/pull/3128)
-* [Control manual camera speed through the keyboard](https://github.com/microsoft/AirSim/pulls?page=6&q=is%3Apr+is%3Aclosed+sort%3Aupdated-desc#:~:text=1-,Control%20manual%20camera%20speed%20through%20the%20keyboard,-%233221%20by%20saihv) 
+* [从现有的 UE 材质或纹理 PNG 动态设置对象纹理](https://github.com/microsoft/AirSim/pull/3992)
+* [能够生成/销毁灯光并控制灯光参数](https://github.com/microsoft/AirSim/pull/3991)
+* [Unity 支持多架无人机](https://github.com/microsoft/AirSim/pull/3128)
+* [通过键盘控制手动相机速度](https://github.com/microsoft/AirSim/pulls?page=6&q=is%3Apr+is%3Aclosed+sort%3Aupdated-desc#:~:text=1-,Control%20manual%20camera%20speed%20through%20the%20keyboard,-%233221%20by%20saihv) 
 
-For complete list of changes, view our [Changelog](docs/CHANGELOG.md)
+如需查看完整的变更列表，请查看我们的[变更日志](docs/CHANGELOG.md) 
 
-## FAQ
+## 常见问题#
 
-If you run into problems, check the [FAQ](https://microsoft.github.io/AirSim/faq) and feel free to post issues in the  [AirSim](https://github.com/OpenHUTB/air/issues) repository.
-
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+如果您遇到问题，请查看 [常见问题解答](https://microsoft.github.io/AirSim/faq) 并随时在 [Air](https://github.com/OpenHUTB/air/issues) 存储库中发布问题。
 
 
-## License
 
-This project is released under the MIT License. Please review the [License file](LICENSE) for more details.
+## 许可证
+
+本项目遵循 MIT 许可证发布。请查看[许可证文件](LICENSE)了解更多详情。
+
+
 
 
 
