@@ -36,6 +36,9 @@ esac
 
 done
 
+# os version
+VERSION=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f2)
+
 # llvm tools
 if [ "$(uname)" == "Darwin" ]; then # osx
     brew update
@@ -43,28 +46,51 @@ if [ "$(uname)" == "Darwin" ]; then # osx
     #brew install llvm@8
     brew install llvm
 else #linux
-    # fix: Package vulkan-utils not found is displayed
-    # https://github.com/microsoft/AirSim/issues/4866
-    # wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-    # sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
-    # sudo apt update
-    # sudo apt-get -y install --no-install-recommends \
-    #     lsb-release \
-    #     rsync \
-    #     software-properties-common \
-    #     wget \
-    #     libvulkan1 \
-    #     vulkan-utils
+    if [ "$VERSION" == "22.04" ]; then 
+	 wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+         sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+         sudo apt update
+         sudo apt-get -y install --no-install-recommends \
+                lsb-release \
+                rsync \
+                software-properties-common \
+                wget \
+                libvulkan1 \
+                vulkan-tools
 
-    #install clang and build tools
-    VERSION=$(lsb_release -rs | cut -d. -f1)
-    # Since Ubuntu 17 clang is part of the core repository
-    # See https://packages.ubuntu.com/search?keywords=clang-8
-    if [ "$VERSION" -lt "17" ]; then
-        wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo apt-get update
+         #install clang and build tools
+         VERSION=$(lsb_release -rs | cut -d. -f1)
+         # Since Ubuntu 17 clang is part of the core repository
+         # See https://packages.ubuntu.com/search?keywords=clang-8
+        if [ "$VERSION" -lt "17" ]; then
+            wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+            sudo apt-get update
+        fi
+        sudo apt-get install -y clang-11 clang++-11 libc++-11-dev libc++abi-11-dev
+    else
+         # fix: Package vulkan-utils not found is displayed
+         # https://github.com/microsoft/AirSim/issues/4866
+         # wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+         # sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+         # sudo apt update
+         # sudo apt-get -y install --no-install-recommends \
+         #     lsb-release \
+         #     rsync \
+         #     software-properties-common \
+         #     wget \
+         #     libvulkan1 \
+         #     vulkan-utils
+
+         #install clang and build tools
+         VERSION=$(lsb_release -rs | cut -d. -f1)
+         # Since Ubuntu 17 clang is part of the core repository
+         # See https://packages.ubuntu.com/search?keywords=clang-8
+        if [ "$VERSION" -lt "17" ]; then
+            wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+            sudo apt-get update
+        fi
+        # sudo apt-get install -y clang-10 clang++-10 libc++-dev libc++abi-dev
     fi
-   # sudo apt-get install -y clang-10 clang++-10 libc++-dev libc++abi-dev
 fi
 
 if ! which cmake; then
@@ -73,6 +99,7 @@ if ! which cmake; then
 else
     cmake_ver=$(cmake --version 2>&1 | head -n1 | cut -d ' ' -f3 | awk '{print $NF}')
 fi
+
 
 #give user perms to access USB port - this is not needed if not using PX4 HIL
 #TODO: figure out how to do below in travis
@@ -98,7 +125,9 @@ else #linux
     fi
 
     # install additional tools
-    # sudo apt-get install -y build-essential unzip
+    if [ "$VERSION" == "22.04" ]; then
+        sudo apt-get install -y build-essential unzip
+    fi     
 
     if version_less_than_equal_to "$cmake_ver" "$MIN_CMAKE_VERSION"; then
         if [ "$(lsb_release -rs)" == "18.04" ]; then
