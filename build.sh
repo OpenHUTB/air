@@ -67,6 +67,9 @@ else
         export CC="gcc-11"
         export CXX="g++-11"
     else
+      # os version
+      VERSION=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f2)
+
       if [ "$VERSION" == "22.04" ]; then
         export CC="clang-11"
         export CXX="clang++-11"
