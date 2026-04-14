@@ -28,6 +28,13 @@
 #include <limits.h> // needed for CHAR_BIT used below
 #endif
 
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 //Stubs for C++17 optional type
 #if (defined __cplusplus) && (__cplusplus >= 201700L)
 #include <optional>
@@ -80,11 +87,14 @@ __attribute__((__format__(__printf__, 1, 0))) static int _vscprintf(const char* 
 #endif
 
 // Call this on a function parameter to suppress the unused paramter warning
+#ifndef AIRSIM_UNUSED_HELPER_DEFINED
+#define AIRSIM_UNUSED_HELPER_DEFINED
 template <class T>
 inline void unused(T const& result)
 {
     static_cast<void>(result);
 }
+#endif
 
 namespace mavlink_utils
 {

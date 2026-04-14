@@ -1,6 +1,6 @@
 // SimWorldGameMode.cpp — Unified CARLA + AirSim GameMode
 // All methods ported from SimHUD.cpp and AirSimGameMode.cpp with minimal changes.
-// v0.1.2: Added built-in FPS drone control with background thread.
+// v0.1.5: Scroll wheel speed, physics/invincible toggle (P), help overlay (H).
 
 #include "SimWorldGameMode.h"
 #include "UObject/ConstructorHelpers.h"
@@ -26,9 +26,18 @@
 #include "Carla/Trigger/TriggerFactory.h"
 #include "Carla/Actor/UtilActorFactory.h"
 #include "Carla/AI/AIControllerFactory.h"
+#include "Carla/Actor/ActorDispatcher.h"
+#include "Carla/Game/CarlaGameInstance.h"
 
 #include "GameFramework/SpectatorPawn.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "Widgets/SOverlay.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SSpacer.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Styling/CoreStyle.h"
 
 #include <stdexcept>
 #include <cmath>
@@ -102,19 +111,16 @@ public:
             return 1;
         }
 
-        // Enable API control and arm
-        DroneApi->enableApiControl(true);
-        DroneApi->armDisarm(true);
-
-        // Takeoff
-        UE_LOG(LogTemp, Log, TEXT("FDroneControlWorker: Taking off..."));
-        DroneApi->takeoff(15.0f);
-        UE_LOG(LogTemp, Log, TEXT("FDroneControlWorker: Takeoff complete, FPS control active."));
+        // Don't call enableApiControl/armDisarm at startup — this allows
+        // external Python API to control the drone freely. FPS control will
+        // activate on first keyboard input.
+        UE_LOG(LogTemp, Log, TEXT("FDroneControlWorker: Ready. Use WASD/QE for FPS control, or Python API for scripted flight."));
 
         *bDroneReady_ = true;
-        bool bWasHovering = false;
+        bool bWasHovering = true;   // true = don't hover on startup
+        bool bFPSActivated = false; // becomes true after first keyboard input
 
-        // Main control loop (~20Hz, each moveByVelocity blocks for ~duration)
+        // Main control loop
         while (bRunning_)
         {
             FVector Vel;
@@ -129,35 +135,64 @@ public:
                 Hover = *bShouldHover_;
             }
 
-            if (Hover)
+            // If no keyboard input has ever been detected, just sleep (let Python API work)
+            if (!bFPSActivated && Hover)
             {
-                if (!bWasHovering)
-                {
-                    DroneApi->hover();
-                    bWasHovering = true;
-                }
-                // Idle when hovering — sleep a bit to avoid busy-wait
-                FPlatformProcess::Sleep(0.05f);
+                FPlatformProcess::Sleep(0.1f);
+                continue;
             }
-            else
+
+            try
             {
-                bWasHovering = false;
-                YawMode yaw_mode(false, YawCmd);  // is_rate=false, absolute yaw angle
-                DroneApi->moveByVelocity(
-                    Vel.X, Vel.Y, Vel.Z,
-                    0.1f,  // duration: short so we can update often
-                    DrivetrainType::MaxDegreeOfFreedom,
-                    yaw_mode);
-                // moveByVelocity blocks for ~100ms (the duration), then we loop
+                // First keyboard/mouse input: take API control
+                if (!bFPSActivated && !Hover)
+                {
+                    bFPSActivated = true;
+                    DroneApi->enableApiControl(true);
+                    DroneApi->armDisarm(true);
+                    UE_LOG(LogTemp, Log, TEXT("FDroneControlWorker: FPS control activated!"));
+                }
+
+                if (bFPSActivated)
+                {
+                    // Always send velocity + yaw (even when hovering)
+                    // This ensures yaw updates even without WASD input
+                    YawMode yaw_mode(false, YawCmd);
+                    DroneApi->moveByVelocity(
+                        Hover ? 0.0f : Vel.X,
+                        Hover ? 0.0f : Vel.Y,
+                        Hover ? 0.0f : Vel.Z,
+                        0.1f,
+                        DrivetrainType::MaxDegreeOfFreedom,
+                        yaw_mode);
+                }
+                else
+                {
+                    // Not yet activated: sleep and let Python API work
+                    FPlatformProcess::Sleep(0.05f);
+                }
+            }
+            catch (const std::exception& ex)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("FDroneControlWorker: %s"), *FString(ex.what()));
+                FPlatformProcess::Sleep(0.1f);
             }
         }
 
-        // Land on shutdown
-        UE_LOG(LogTemp, Log, TEXT("FDroneControlWorker: Landing..."));
-        DroneApi->hover();
-        DroneApi->land(10.0f);
-        DroneApi->armDisarm(false);
-        DroneApi->enableApiControl(false);
+        // Cleanup on shutdown (only if FPS was activated)
+        if (bFPSActivated)
+        {
+            UE_LOG(LogTemp, Log, TEXT("FDroneControlWorker: Landing..."));
+            try {
+                DroneApi->hover();
+                DroneApi->land(10.0f);
+                DroneApi->armDisarm(false);
+                DroneApi->enableApiControl(false);
+            }
+            catch (const std::exception& ex) {
+                UE_LOG(LogTemp, Warning, TEXT("FDroneControlWorker: Landing error: %s"), *FString(ex.what()));
+            }
+        }
 
         return 0;
     }
@@ -317,6 +352,32 @@ void ASimWorldGameMode::Tick(float DeltaSeconds)
     // CARLA: Recorder tick
     Super::Tick(DeltaSeconds);
 
+    // One-time: register AirSim drone pawn with CARLA ActorDispatcher
+    // so Python scripts can find it via world.get_actors()
+    if (!bDroneRegistered_ && SimMode_)
+    {
+        auto* PawnApi = SimMode_->getVehicleSimApi();
+        if (PawnApi)
+        {
+            auto* DroneSimApi = static_cast<PawnSimApi*>(PawnApi);
+            APawn* DronePawn = DroneSimApi->getPawn();
+            if (DronePawn)
+            {
+                auto* GI = Cast<UCarlaGameInstance>(GetGameInstance());
+                auto* Episode = GI ? GI->GetCarlaEpisode() : nullptr;
+                if (Episode)
+                {
+                    FActorDescription Description;
+                    Description.Id = TEXT("airsim.drone");
+                    Description.Class = DronePawn->GetClass();
+                    Episode->ActorDispatcher->RegisterActor(*DronePawn, Description);
+                    UE_LOG(LogTemp, Log, TEXT("SimWorldGameMode: Drone pawn registered with CARLA (type_id=airsim.drone)"));
+                }
+                bDroneRegistered_ = true;
+            }
+        }
+    }
+
     // AirSim: Update debug report widget
     if (SimMode_ && SimMode_->EnableReport && Widget_)
         Widget_->updateDebugReport(SimMode_->getDebugReport());
@@ -326,6 +387,8 @@ void ASimWorldGameMode::Tick(float DeltaSeconds)
     {
         UpdateFPSControl(DeltaSeconds);
         UpdateCameraFollow();
+        if (bShowHelp_)
+            DrawHelpOverlay();
     }
 }
 
@@ -355,6 +418,18 @@ void ASimWorldGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
     // Stop AirSim API server
     if (SimMode_)
         SimMode_->stopApiServer();
+
+    // Remove help overlay
+    if (HelpOverlayWrapper_.IsValid() && GEngine && GEngine->GameViewport)
+    {
+        GEngine->GameViewport->RemoveViewportWidgetContent(HelpOverlayWrapper_.ToSharedRef());
+    }
+    HelpOverlayWrapper_.Reset();
+    HelpTitleBlock_.Reset();
+    HelpSubtitleBlock_.Reset();
+    HelpContentBlock_.Reset();
+    HelpStatusBlock_.Reset();
+    HelpOverlayContainer_.Reset();
 
     // Destroy AirSim widget
     if (Widget_) {
@@ -401,6 +476,14 @@ void ASimWorldGameMode::SetupFPSControl()
     FInputModeGameOnly InputMode;
     PC->SetInputMode(InputMode);
 
+    // Force viewport mouse lock — required since DefaultPawnClass=nullptr means
+    // no possessed pawn, and UE4's default mouse capture depends on pawn possession
+    if (UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport())
+    {
+        ViewportClient->SetMouseLockMode(EMouseLockMode::LockAlways);
+        ViewportClient->SetCaptureMouseOnClick(EMouseCaptureMode::CapturePermanently);
+    }
+
     // Set view target to spectator
     if (CachedSpectator_)
         PC->SetViewTarget(CachedSpectator_);
@@ -445,32 +528,13 @@ void ASimWorldGameMode::SetupFPSControl()
         WeatherPresets_.Add(w);
     }
 
-    // Build map list (filter to Town* only)
-    TArray<FString> AllMaps = UCarlaStatics::GetAllMapNames();
-    for (const FString& Map : AllMaps)
-    {
-        if (Map.StartsWith(TEXT("Town")))
-            AvailableMaps_.Add(Map);
-    }
-    // Find current map index
-    FString CurrentMap = GetWorld()->GetMapName();
-    CurrentMap = CurrentMap.Replace(TEXT("UEDPIE_0_"), TEXT(""));  // Strip editor prefix
-    for (int32 i = 0; i < AvailableMaps_.Num(); ++i)
-    {
-        if (CurrentMap.Contains(AvailableMaps_[i]))
-        {
-            MapIndex_ = i;
-            break;
-        }
-    }
-
-    // Bind FPS control keys
-    UAirBlueprintLib::BindActionToKey("InputEventToggleView", EKeys::V, this, &ASimWorldGameMode::InputEventToggleView);
-    UAirBlueprintLib::BindActionToKey("InputEventNextWeather", EKeys::N, this, &ASimWorldGameMode::InputEventNextWeather);
-    UAirBlueprintLib::BindActionToKey("InputEventNextMap", EKeys::M, this, &ASimWorldGameMode::InputEventNextMap);
-    UAirBlueprintLib::BindActionToKey("InputEventToggleMouseCapture", EKeys::Tab, this, &ASimWorldGameMode::InputEventToggleMouseCapture);
-    UAirBlueprintLib::BindActionToKey("InputEventSpeedUp", EKeys::Equals, this, &ASimWorldGameMode::InputEventSpeedUp);
-    UAirBlueprintLib::BindActionToKey("InputEventSpeedDown", EKeys::Hyphen, this, &ASimWorldGameMode::InputEventSpeedDown);
+    // Bind FPS control keys (true = fire on key press, not release)
+    UAirBlueprintLib::BindActionToKey("InputEventNextWeather", EKeys::N, this, &ASimWorldGameMode::InputEventNextWeather, true);
+    UAirBlueprintLib::BindActionToKey("InputEventToggleMouseCapture", EKeys::Tab, this, &ASimWorldGameMode::InputEventToggleMouseCapture, true);
+    UAirBlueprintLib::BindActionToKey("InputEventSpeedUp", EKeys::MouseScrollUp, this, &ASimWorldGameMode::InputEventSpeedUp, true);
+    UAirBlueprintLib::BindActionToKey("InputEventSpeedDown", EKeys::MouseScrollDown, this, &ASimWorldGameMode::InputEventSpeedDown, true);
+    UAirBlueprintLib::BindActionToKey("InputEventToggleHelpOverlay", EKeys::H, this, &ASimWorldGameMode::InputEventToggleHelpOverlay, true);
+    UAirBlueprintLib::BindActionToKey("InputEventTogglePhysicsMode", EKeys::P, this, &ASimWorldGameMode::InputEventTogglePhysicsMode, true);
 
     // Start drone control thread
     DroneWorker_ = new FDroneControlWorker(
@@ -479,7 +543,7 @@ void ASimWorldGameMode::SetupFPSControl()
     DroneThread_ = FRunnableThread::Create(DroneWorker_, TEXT("DroneControlThread"));
 
     bFPSControlActive_ = true;
-    UE_LOG(LogTemp, Log, TEXT("SetupFPSControl: FPS drone control active. WASD=Move, Mouse=Look, V=View, N=Weather, M=Map"));
+    UE_LOG(LogTemp, Log, TEXT("SetupFPSControl: FPS drone control active. WASD=Move, Mouse=Look, Scroll=Speed, N=Weather, H=Help, P=PhysicsToggle"));
 }
 
 void ASimWorldGameMode::UpdateFPSControl(float DeltaSeconds)
@@ -488,34 +552,44 @@ void ASimWorldGameMode::UpdateFPSControl(float DeltaSeconds)
     if (!PC || !bDroneReady_)
         return;
 
-    // ---- Mouse look ----
+    // v0.1.3: Initialize FPSYaw_ from drone's actual orientation (once)
+    // Fixes W key flying in wrong direction on first press
+    if (!bYawInitialized_)
+    {
+        auto* PawnApi = SimMode_ ? SimMode_->getVehicleSimApi() : nullptr;
+        if (PawnApi)
+        {
+            FRotator DroneRot = PawnApi->getUUOrientation();
+            FPSYaw_ = DroneRot.Yaw;
+            bYawInitialized_ = true;
+        }
+    }
+
+    // ---- Mouse look: yaw only ----
     if (bMouseCaptured_)
     {
         float MouseX = 0.0f, MouseY = 0.0f;
         PC->GetInputMouseDelta(MouseX, MouseY);
 
-        FPSYaw_ += MouseX * 2.0f;        // sensitivity multiplier
-        FPSPitch_ -= MouseY * 2.0f;
-        FPSPitch_ = FMath::Clamp(FPSPitch_, -89.0f, 89.0f);
+        FPSYaw_ += MouseX * 0.35f;
 
-        // Normalize yaw to [0, 360)
         while (FPSYaw_ >= 360.0f) FPSYaw_ -= 360.0f;
         while (FPSYaw_ < 0.0f)   FPSYaw_ += 360.0f;
     }
 
-    // ---- Keyboard movement -> NED velocity ----
+    // ---- Keyboard movement: horizontal + vertical ----
+    // WASD = move on horizontal plane (yaw-relative), Space/Shift = up/down
     float Fwd = 0.0f, Strafe = 0.0f, Vert = 0.0f;
     if (PC->IsInputKeyDown(EKeys::W)) Fwd += 1.0f;
     if (PC->IsInputKeyDown(EKeys::S)) Fwd -= 1.0f;
     if (PC->IsInputKeyDown(EKeys::D)) Strafe += 1.0f;
     if (PC->IsInputKeyDown(EKeys::A)) Strafe -= 1.0f;
-    if (PC->IsInputKeyDown(EKeys::Q) || PC->IsInputKeyDown(EKeys::SpaceBar)) Vert += 1.0f;
-    if (PC->IsInputKeyDown(EKeys::E) || PC->IsInputKeyDown(EKeys::LeftShift)) Vert -= 1.0f;
+    if (PC->IsInputKeyDown(EKeys::SpaceBar))  Vert += 1.0f;   // ascend
+    if (PC->IsInputKeyDown(EKeys::LeftShift)) Vert -= 1.0f;   // descend
 
     bool bHasInput = (FMath::Abs(Fwd) > 0.01f || FMath::Abs(Strafe) > 0.01f || FMath::Abs(Vert) > 0.01f);
 
-    // Decompose by yaw into world-frame NED
-    // AirSim NED: X=North, Y=East, Z=Down
+    // Horizontal velocity decomposed by yaw only (no pitch)
     float YawRad = FMath::DegreesToRadians(FPSYaw_);
     float VxNED = (Fwd * FMath::Cos(YawRad) - Strafe * FMath::Sin(YawRad)) * DroneSpeed_;
     float VyNED = (Fwd * FMath::Sin(YawRad) + Strafe * FMath::Cos(YawRad)) * DroneSpeed_;
@@ -540,37 +614,22 @@ void ASimWorldGameMode::UpdateCameraFollow()
         return;
 
     FVector DronePos = PawnApi->getUUPosition();
-    FRotator DroneRot = PawnApi->getUUOrientation();
+    FRotator DroneRot = PawnApi->getUUOrientation();  // drone's actual UE4 rotation
 
-    FRotator CamRot(FPSPitch_, FPSYaw_, 0.0f);
+    // v0.1.3: Always 3rd person (removed 1st person toggle)
+    // 3rd person: fixed chase camera behind drone
+    FRotator YawOnly(0.0f, DroneRot.Yaw, 0.0f);
+    FVector Behind = YawOnly.Vector() * -800.0f;  // 8m behind
+    Behind.Z += 350.0f;                            // 3.5m above
 
-    if (bFirstPersonView_)
-    {
-        // 1st person: camera at drone position
-        CachedSpectator_->SetActorLocation(DronePos);
-        CachedSpectator_->SetActorRotation(CamRot);
-    }
-    else
-    {
-        // 3rd person: 5m behind + 2m above, looking at drone
-        FVector Offset = CamRot.Vector() * -500.0f;  // 5m behind (UE4 cm)
-        Offset.Z += 200.0f;  // 2m above
-        FVector CamPos = DronePos + Offset;
-        FRotator LookAt = (DronePos - CamPos).Rotation();
+    FVector CamPos = DronePos + Behind;
+    FRotator LookAt = (DronePos - CamPos).Rotation();
 
-        CachedSpectator_->SetActorLocation(CamPos);
-        CachedSpectator_->SetActorRotation(LookAt);
-    }
+    CachedSpectator_->SetActorLocation(CamPos);
+    CachedSpectator_->SetActorRotation(LookAt);
 }
 
 // ========================== FPS Input Handlers ==========================
-
-void ASimWorldGameMode::InputEventToggleView()
-{
-    bFirstPersonView_ = !bFirstPersonView_;
-    UE_LOG(LogTemp, Log, TEXT("FPS View: %s"),
-           bFirstPersonView_ ? TEXT("1st Person") : TEXT("3rd Person"));
-}
 
 void ASimWorldGameMode::InputEventNextWeather()
 {
@@ -596,33 +655,24 @@ void ASimWorldGameMode::InputEventNextWeather()
     UE_LOG(LogTemp, Log, TEXT("Weather: %s"), PresetNames[WeatherIndex_]);
 }
 
-void ASimWorldGameMode::InputEventNextMap()
-{
-    if (AvailableMaps_.Num() == 0) return;
-
-    MapIndex_ = (MapIndex_ + 1) % AvailableMaps_.Num();
-    FString NextMap = AvailableMaps_[MapIndex_];
-
-    UE_LOG(LogTemp, Log, TEXT("Loading map: %s"), *NextMap);
-
-    auto* Episode = UCarlaStatics::GetCurrentEpisode(GetWorld());
-    if (Episode)
-    {
-        Episode->LoadNewEpisode(NextMap, true);
-    }
-}
-
 void ASimWorldGameMode::InputEventToggleMouseCapture()
 {
     APlayerController* PC = GetWorld()->GetFirstPlayerController();
     if (!PC) return;
 
     bMouseCaptured_ = !bMouseCaptured_;
+    UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport();
+
     if (bMouseCaptured_)
     {
         PC->bShowMouseCursor = false;
         FInputModeGameOnly InputMode;
         PC->SetInputMode(InputMode);
+        if (ViewportClient)
+        {
+            ViewportClient->SetMouseLockMode(EMouseLockMode::LockAlways);
+            ViewportClient->SetCaptureMouseOnClick(EMouseCaptureMode::CapturePermanently);
+        }
     }
     else
     {
@@ -630,6 +680,11 @@ void ASimWorldGameMode::InputEventToggleMouseCapture()
         FInputModeGameAndUI InputMode;
         InputMode.SetHideCursorDuringCapture(false);
         PC->SetInputMode(InputMode);
+        if (ViewportClient)
+        {
+            ViewportClient->SetMouseLockMode(EMouseLockMode::DoNotLock);
+            ViewportClient->SetCaptureMouseOnClick(EMouseCaptureMode::NoCapture);
+        }
     }
     UE_LOG(LogTemp, Log, TEXT("Mouse capture: %s"),
            bMouseCaptured_ ? TEXT("ON") : TEXT("OFF"));
@@ -637,14 +692,258 @@ void ASimWorldGameMode::InputEventToggleMouseCapture()
 
 void ASimWorldGameMode::InputEventSpeedUp()
 {
-    DroneSpeed_ = FMath::Min(30.0f, DroneSpeed_ + 2.0f);
+    DroneSpeed_ = FMath::Min(30.0f, DroneSpeed_ + 1.0f);
     UE_LOG(LogTemp, Log, TEXT("Drone speed: %.0f m/s"), DroneSpeed_);
 }
 
 void ASimWorldGameMode::InputEventSpeedDown()
 {
-    DroneSpeed_ = FMath::Max(2.0f, DroneSpeed_ - 2.0f);
+    DroneSpeed_ = FMath::Max(1.0f, DroneSpeed_ - 1.0f);
     UE_LOG(LogTemp, Log, TEXT("Drone speed: %.0f m/s"), DroneSpeed_);
+}
+
+void ASimWorldGameMode::InputEventToggleHelpOverlay()
+{
+    bShowHelp_ = !bShowHelp_;
+    ShowHelpOverlay(bShowHelp_);
+    UE_LOG(LogTemp, Log, TEXT("Help overlay: %s"), bShowHelp_ ? TEXT("ON") : TEXT("OFF"));
+}
+
+void ASimWorldGameMode::InputEventTogglePhysicsMode()
+{
+    bPhysicsCollision_ = !bPhysicsCollision_;
+
+    // Push to MultirotorPawnSimApi
+    if (SimMode_)
+    {
+        auto* PawnApi = SimMode_->getVehicleSimApi();
+        if (PawnApi)
+        {
+            auto* MultiPawnApi = static_cast<MultirotorPawnSimApi*>(PawnApi);
+            MultiPawnApi->setPhysicsCollisionEnabled(bPhysicsCollision_);
+        }
+    }
+
+    // On-screen notification (2s)
+    if (GEngine)
+    {
+        FString Msg = bPhysicsCollision_
+            ? TEXT("Physics Mode ON / 物理碰撞模式")
+            : TEXT("Invincible Mode ON / 无敌穿越模式");
+        GEngine->AddOnScreenDebugMessage(7777, 2.0f, FColor::Yellow, Msg);
+    }
+    UE_LOG(LogTemp, Log, TEXT("Collision mode: %s"), bPhysicsCollision_ ? TEXT("Physics") : TEXT("Invincible"));
+}
+
+void ASimWorldGameMode::DrawHelpOverlay()
+{
+    // Now handled by Slate widget — just update dynamic text
+    if (bShowHelp_ && HelpContentBlock_.IsValid())
+    {
+        UpdateHelpOverlayText();
+    }
+}
+
+void ASimWorldGameMode::CreateHelpOverlayWidget()
+{
+    if (HelpOverlayWrapper_.IsValid())
+        return;
+
+    // Font setup — DroidSansFallback for CJK support
+    FString FontPath = FPaths::EngineContentDir() / TEXT("Slate/Fonts/DroidSansFallback.ttf");
+    FSlateFontInfo TitleFont(FontPath, 30);
+    TitleFont.TypefaceFontName = FName("Bold");
+    FSlateFontInfo SubtitleFont(FontPath, 16);
+    SubtitleFont.TypefaceFontName = FName("Bold");
+    FSlateFontInfo ContentFont(FontPath, 20);
+    ContentFont.TypefaceFontName = FName("Bold");
+    FSlateFontInfo StatusFont(FontPath, 18);
+    StatusFont.TypefaceFontName = FName("Bold");
+    FSlateFontInfo KeyFont(FontPath, 18);
+    KeyFont.TypefaceFontName = FName("Bold");
+
+    // Color palette — high contrast, solid dark background
+    FLinearColor TitleColor(1.0f, 1.0f, 1.0f, 1.0f);
+    FLinearColor SubtitleColor(0.8f, 0.8f, 0.85f, 1.0f);
+    FLinearColor ContentColor(1.0f, 1.0f, 1.0f, 1.0f);
+    FLinearColor AccentColor(0.38f, 0.68f, 1.0f, 1.0f);        // SF Blue
+    FLinearColor KeyColor(1.0f, 1.0f, 1.0f, 1.0f);
+    FLinearColor SeparatorColor(1.0f, 1.0f, 1.0f, 0.15f);
+    FLinearColor BgColor(0.0f, 0.0f, 0.0f, 0.95f);             // near-opaque black
+
+    // Title
+    HelpTitleBlock_ = SNew(STextBlock)
+        .Font(TitleFont)
+        .ColorAndOpacity(FSlateColor(TitleColor))
+        .Justification(ETextJustify::Left);
+
+    // Subtitle
+    HelpSubtitleBlock_ = SNew(STextBlock)
+        .Font(SubtitleFont)
+        .ColorAndOpacity(FSlateColor(SubtitleColor))
+        .Justification(ETextJustify::Left);
+
+    // Main content — with shadow for better readability
+    HelpContentBlock_ = SNew(STextBlock)
+        .Font(ContentFont)
+        .ColorAndOpacity(FSlateColor(ContentColor))
+        .ShadowOffset(FVector2D(1.5f, 1.5f))
+        .ShadowColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.6f))
+        .Justification(ETextJustify::Left);
+
+    // Status bar — same white color as content, no blue
+    HelpStatusBlock_ = SNew(STextBlock)
+        .Font(StatusFont)
+        .ColorAndOpacity(FSlateColor(ContentColor))
+        .ShadowOffset(FVector2D(1.5f, 1.5f))
+        .ShadowColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.6f))
+        .Justification(ETextJustify::Left);
+
+    // Thin separator line (horizontal rule)
+    auto MakeSeparator = [&SeparatorColor]() -> TSharedRef<SWidget>
+    {
+        return SNew(SBorder)
+            .BorderBackgroundColor(SeparatorColor)
+            .Padding(0)
+            [
+                SNew(SSpacer)
+                .Size(FVector2D(1.0f, 1.0f))
+            ];
+    };
+
+    // Build layout — compact vertical stack, fits within 1080p viewport
+    HelpOverlayContainer_ = SNew(SVerticalBox)
+        // Title
+        + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 2)
+          [ HelpTitleBlock_.ToSharedRef() ]
+        // Subtitle
+        + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+          [ HelpSubtitleBlock_.ToSharedRef() ]
+        // Separator
+        + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+          [ MakeSeparator() ]
+        // Content
+        + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+          [ HelpContentBlock_.ToSharedRef() ]
+        // Separator
+        + SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+          [ MakeSeparator() ]
+        // Status
+        + SVerticalBox::Slot().AutoHeight()
+          [ HelpStatusBlock_.ToSharedRef() ];
+
+    // Wrap in panel — SBox constrains max height to prevent viewport overflow
+    HelpOverlayWrapper_ =
+        SNew(SOverlay)
+        + SOverlay::Slot()
+          .HAlign(HAlign_Left)
+          .VAlign(VAlign_Top)
+          .Padding(FMargin(36.0f, 36.0f, 0.0f, 0.0f))
+          [
+              SNew(SBox)
+              .MaxDesiredHeight(980.0f)
+              .Clipping(EWidgetClipping::ClipToBounds)
+              [
+                  SNew(SBorder)
+                  .BorderBackgroundColor(BgColor)
+                  .Padding(FMargin(28.0f, 22.0f, 36.0f, 20.0f))
+                  [
+                      HelpOverlayContainer_.ToSharedRef()
+                  ]
+              ]
+          ];
+
+    UpdateHelpOverlayText();
+}
+
+void ASimWorldGameMode::UpdateHelpOverlayText()
+{
+    if (!HelpContentBlock_.IsValid())
+        return;
+
+    // Title
+    if (HelpTitleBlock_.IsValid())
+        HelpTitleBlock_->SetText(FText::FromString(TEXT("CarlaAir")));
+
+    // Subtitle — v0.1.7
+    if (HelpSubtitleBlock_.IsValid())
+        HelpSubtitleBlock_->SetText(FText::FromString(
+            TEXT("v0.1.7  Air-ground integrated simulation platform")));
+    // Chinese: 空地一体联合仿真平台
+
+    // Content — detailed bilingual help
+    FString Content = FString::Printf(TEXT(
+        "FLIGHT CONTROLS\n"
+        "\n"
+        "  W / S            Forward / Backward\n"
+        "  A / D            Strafe Left / Right\n"
+        "  Mouse            Yaw Turn Direction\n"
+        "  Space            Ascend Drone\n"
+        "  Left Shift       Descend Drone\n"
+        "  Scroll Wheel     Adjust flight speed (+/- 1 m/s)\n"
+        "\n"
+        "SYSTEM FUNCTIONS\n"
+        "\n"
+        "  N                Cycle Weather Presets\n"
+        "  P                Physics / Noclip\n"
+        "  Tab              Release / Capture Mouse\n"
+        "  H                Show / Hide Help\n"
+        "  1 / 2 / 3        Sensor Camera Views\n"
+        "\n"
+        "ADVANCED (for AirSim experts)\n"
+        "\n"
+        "  I                Toggle First-Person / Default View\n"
+        "  B                FPV Mode (mouse controls drone yaw)\n"
+        "                   FPV Mode (mouse controls drone yaw)\n"
+        "  I / B            For experienced AirSim users only"
+    ));
+    // Chinese decoded: 飞行控制, 前进/后退, 左移/右移, 偏航旋转方向, 上升无人机, 下降无人机,
+    // 调节飞行速度, 系统功能, 切换天气预设, 物理碰撞/穿越模式, 释放/捕获鼠标, 显示/隐藏帮助,
+    // 传感器画面, AirSim高级, 切换第一人称/默认视角, FPV模式(鼠标控制无人机偏航),
+    // 仅建议熟悉AirSim的用户使用
+    HelpContentBlock_->SetText(FText::FromString(Content));
+
+    // Status line — white, same style as content
+    FString ModeStr = bPhysicsCollision_
+        ? TEXT("Physics")
+        : TEXT("Noclip");
+
+    if (HelpStatusBlock_.IsValid())
+    {
+        FString Status = FString::Printf(TEXT(
+            "Speed: %.0f m/s  |  %s  |  Press H to close"),
+            DroneSpeed_, *ModeStr);
+        // Chinese: 当前速度, 按H关闭
+        HelpStatusBlock_->SetText(FText::FromString(Status));
+    }
+}
+
+void ASimWorldGameMode::ShowHelpOverlay(bool bShow)
+{
+    if (!GEngine || !GEngine->GameViewport)
+        return;
+
+    if (bShow)
+    {
+        CreateHelpOverlayWidget();
+        if (HelpOverlayWrapper_.IsValid())
+        {
+            GEngine->GameViewport->AddViewportWidgetContent(
+                HelpOverlayWrapper_.ToSharedRef(),
+                100  // z-order (above most UI)
+            );
+            UpdateHelpOverlayText();
+        }
+    }
+    else
+    {
+        if (HelpOverlayWrapper_.IsValid())
+        {
+            GEngine->GameViewport->RemoveViewportWidgetContent(
+                HelpOverlayWrapper_.ToSharedRef()
+            );
+        }
+    }
 }
 
 // ========================== AirSim Settings ==========================

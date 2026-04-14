@@ -29,7 +29,8 @@ void ACameraDirector::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     if (mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_MANUAL) {
-        manual_pose_controller_->updateActorPose(DeltaTime);
+        if (manual_pose_controller_)
+            manual_pose_controller_->updateActorPose(DeltaTime);
     }
     else if (mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_SPRINGARM_CHASE) {
         //do nothing, spring arm is pulling the camera with it
@@ -56,6 +57,7 @@ void ACameraDirector::initializeForBeginPlay(ECameraDirectorMode view_mode,
     setupInputBindings();
 
     mode_ = view_mode;
+    mode_before_front_ = view_mode;  // default restore target = initial view
 
     follow_actor_ = follow_actor;
     fpv_camera_ = fpv_camera;
@@ -151,7 +153,7 @@ void ACameraDirector::setMode(ECameraDirectorMode mode)
 
         //Remove any existing key bindings for manual mode
         if (mode != ECameraDirectorMode::CAMERA_DIRECTOR_MODE_MANUAL) {
-            if (ExternalCamera != nullptr && manual_pose_controller_->getActor() == ExternalCamera) {
+            if (ExternalCamera != nullptr && manual_pose_controller_ && manual_pose_controller_->getActor() == ExternalCamera) {
 
                 manual_pose_controller_->setActor(nullptr);
             }
@@ -286,13 +288,41 @@ void ACameraDirector::inputEventBackupView()
 
 void ACameraDirector::inputEventFrontView()
 {
+    // Toggle: if already in Front view → restore the view that was active before pressing I
+    if (mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FRONT
+        || mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FPV) {
+        // Restore previous mode
+        switch (mode_before_front_) {
+        case ECameraDirectorMode::CAMERA_DIRECTOR_MODE_GROUND_OBSERVER:
+            inputEventGroundView();
+            break;
+        case ECameraDirectorMode::CAMERA_DIRECTOR_MODE_MANUAL:
+            inputEventManualView();
+            break;
+        case ECameraDirectorMode::CAMERA_DIRECTOR_MODE_SPRINGARM_CHASE:
+            inputEventSpringArmChaseView();
+            break;
+        case ECameraDirectorMode::CAMERA_DIRECTOR_MODE_BACKUP:
+            inputEventBackupView();
+            break;
+        default:
+            // FLY_WITH_ME or anything else
+            inputEventFlyWithView();
+            break;
+        }
+        return;
+    }
+
+    // Save current mode before switching to front view
+    mode_before_front_ = mode_;
+
     if (front_camera_) {
         setMode(ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FRONT);
         front_camera_->showToScreen();
         disableCameras(true, true, true, false);
     }
     else
-        UAirBlueprintLib::LogMessageString("Camera is not available: ", "backup_camera", LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessageString("Camera is not available: ", "front_camera", LogDebugLevel::Failure);
 
     notifyViewModeChanged();
 }

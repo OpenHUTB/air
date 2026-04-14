@@ -7,6 +7,7 @@
 #include "SimMode/SimModeBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "Runtime/Engine/Classes/Engine/StaticMesh.h"
+#include "Engine/LevelStreamingDynamic.h"
 #include <string>
 
 class WorldSimApi : public msr::airlib::WorldSimApiBase
@@ -14,6 +15,8 @@ class WorldSimApi : public msr::airlib::WorldSimApiBase
 public:
     typedef msr::airlib::Pose Pose;
     typedef msr::airlib::Vector3r Vector3r;
+    typedef msr::airlib::Vector2r Vector2r;
+    typedef msr::airlib::Quaternionr Quaternionr;
     typedef msr::airlib::MeshPositionVertexBuffersResponse MeshPositionVertexBuffersResponse;
     typedef msr::airlib::ImageCaptureBase ImageCaptureBase;
     typedef msr::airlib::CameraDetails CameraDetails;
@@ -125,5 +128,6 @@ private:
 
 private:
     ASimModeBase* simmode_;
+    ULevelStreamingDynamic* current_level_;
     std::vector<bool> voxel_grid_;
 };

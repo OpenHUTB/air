@@ -22,12 +22,9 @@ void ASimHUD::BeginPlay()
 
     try {
         UAirBlueprintLib::OnBeginPlay();
-        initializeSettings();
         loadLevel();
 
-        // Prevent a MavLink connection being established if changing levels
-        if (map_changed_) return;
-
+        initializeSettings();
         setUnrealEngineSettings();
         createSimMode();
         createMainWidget();
@@ -256,7 +253,10 @@ std::string ASimHUD::getSimModeFromUser()
 
 void ASimHUD::loadLevel()
 {
-    UAirBlueprintLib::RunCommandOnGameThread([&]() { this->map_changed_ = UAirBlueprintLib::loadLevel(this->GetWorld(), FString(AirSimSettings::singleton().level_name.c_str())); }, true);
+    if (AirSimSettings::singleton().level_name != "")
+        UAirBlueprintLib::RunCommandOnGameThread([&]() { UAirBlueprintLib::loadLevel(this->GetWorld(), FString(AirSimSettings::singleton().level_name.c_str())); }, true);
+    else
+        UAirBlueprintLib::RunCommandOnGameThread([&]() { UAirBlueprintLib::loadLevel(this->GetWorld(), FString("Blocks")); }, true);
 }
 
 void ASimHUD::createSimMode()
@@ -344,21 +344,27 @@ bool ASimHUD::getSettingsText(std::string& settingsText)
 // Returns true if the argument is present, false otherwise.
 bool ASimHUD::getSettingsTextFromCommandLine(std::string& settingsText)
 {
-    const TCHAR* commandLineArgs = FCommandLine::Get();
-    FString settingsJsonFString;
 
-    if (FParse::Value(commandLineArgs, TEXT("-settings="), settingsJsonFString, false)) {
-        if (readSettingsTextFromFile(settingsJsonFString, settingsText)) {
+    bool found = false;
+    FString settingsTextFString;
+    const TCHAR* commandLineArgs = FCommandLine::Get();
+
+    if (FParse::Param(commandLineArgs, TEXT("-settings"))) {
+        FString commandLineArgsFString = FString(commandLineArgs);
+        int idx = commandLineArgsFString.Find(TEXT("-settings"));
+        FString settingsJsonFString = commandLineArgsFString.RightChop(idx + 10);
+
+        if (readSettingsTextFromFile(settingsJsonFString.TrimQuotes(), settingsText)) {
             return true;
         }
-        else {
-            UAirBlueprintLib::LogMessageString("Loaded settings from commandline: ", TCHAR_TO_UTF8(*settingsJsonFString), LogDebugLevel::Informational);
-            settingsText = TCHAR_TO_UTF8(*settingsJsonFString);
-            return true;
+
+        if (FParse::QuotedString(*settingsJsonFString, settingsTextFString)) {
+            settingsText = std::string(TCHAR_TO_UTF8(*settingsTextFString));
+            found = true;
         }
     }
 
-    return false;
+    return found;
 }
 
 bool ASimHUD::readSettingsTextFromFile(const FString& settingsFilepath, std::string& settingsText)

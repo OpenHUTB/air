@@ -170,6 +170,7 @@ private: //vars
     mutable SimJoyStick joystick_;
     mutable SimJoyStick::State joystick_state_;
 
+protected: //state (accessible by subclasses for manual collision injection)
     struct State
     {
         FVector start_location;
@@ -193,6 +194,7 @@ private: //vars
 
     State state_, initial_state_;
 
+private:
     std::unique_ptr<msr::airlib::Kinematics> kinematics_;
     std::unique_ptr<msr::airlib::Environment> environment_;
 

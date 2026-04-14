@@ -2,6 +2,7 @@
 #include "AirBlueprintLib.h"
 #include "vehicles/multirotor/MultiRotorParamsFactory.hpp"
 #include "UnrealSensors/UnrealSensorFactory.h"
+#include "common/ClockFactory.hpp"
 #include <exception>
 
 using namespace msr::airlib;
@@ -106,8 +107,41 @@ void MultirotorPawnSimApi::updateRendering(float dt)
             PawnSimApi::setPose(last_phys_pose_, pending_pose_collisions_);
             pending_pose_status_ = PendingPoseStatus::NonePending;
         }
-        else
-            PawnSimApi::setPose(last_phys_pose_, false);
+        else {
+            // CarlaAir v0.1.6: Use sweep mode when physics collision is ON, teleport when OFF.
+            // Sweep mode = UE4 native collision: drone stops at walls naturally.
+            // Teleport mode = pass through everything (invincible/noclip).
+            // Ground clamp always active to prevent falling through CARLA terrain.
+            if (bPhysicsCollisionEnabled_) {
+                PawnSimApi::setPose(last_phys_pose_, false);  // sweep mode: UE4 detects collisions
+            } else {
+                PawnSimApi::setPose(last_phys_pose_, true);   // teleport mode: pass through
+            }
+        }
+
+        // Ground clamp: prevent drone from falling through CARLA terrain/roads.
+        // This fixes the false-collision issue where sweep mode would trap the drone
+        // inside terrain geometry. By ensuring the drone is always above ground,
+        // sweep mode only triggers on actual buildings/obstacles.
+        APawn* pawn = getPawn();
+        if (pawn && pawn->GetWorld()) {
+            FVector DronePos = pawn->GetActorLocation();
+            FHitResult GroundHit;
+            FCollisionQueryParams GroundParams(SCENE_QUERY_STAT(GroundClamp), true, pawn);
+            if (pawn->GetWorld()->LineTraceSingleByChannel(
+                    GroundHit,
+                    DronePos + FVector(0, 0, 10000.0f),
+                    DronePos - FVector(0, 0, 500.0f),
+                    ECC_WorldStatic, GroundParams))
+            {
+                float GroundZ = GroundHit.ImpactPoint.Z;
+                if (DronePos.Z < GroundZ + MIN_GROUND_CLEARANCE)
+                {
+                    DronePos.Z = GroundZ + MIN_GROUND_CLEARANCE;
+                    pawn->SetActorLocation(DronePos, false, nullptr, ETeleportType::TeleportPhysics);
+                }
+            }
+        }
     }
 
     //UAirBlueprintLib::LogMessage(TEXT("Collision (raw) Count:"), FString::FromInt(collision_response.collision_count_raw), LogDebugLevel::Unimportant);

@@ -113,7 +113,7 @@ void AComputerVisionPawn::Tick(float Delta)
     pawn_events_.getPawnTickSignal().emit(Delta);
 
     //update ground level
-    if (manual_pose_controller_->getActor() == this) {
+    if (manual_pose_controller_ && manual_pose_controller_->getActor() == this) {
         manual_pose_controller_->updateActorPose(Delta);
     }
 }

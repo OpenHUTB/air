@@ -21,6 +21,13 @@
 #include "Weather/WeatherLib.h"
 
 #include "DrawDebugHelpers.h"
+#include "Engine/StaticMeshActor.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Components/SkyLightComponent.h"
+#include "Components/PostProcessComponent.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/ExponentialHeightFog.h"
+#include "Components/ExponentialHeightFogComponent.h"
 
 //TODO: this is going to cause circular references which is fine here but
 //in future we should consider moving SimMode not derived from AActor and move
@@ -115,6 +122,12 @@ void ASimModeBase::BeginPlay()
     // vehicles to fall through the map (~30m underground). The NedTransform is initialized
     // with the original player_start_transform, which correctly serves as the NED origin
     // for AirSim coordinate conversion without moving the world.
+    //
+    // KNOWN LIMITATION: In CARLA maps, PlayerStart is typically 20-30m above ground level.
+    // The drone spawns at NED origin (PlayerStart) and freefalls to the ground. SimpleFlight's
+    // ground lock mechanism prevents takeoff from ground contact. Python scripts should use
+    // simSetVehiclePose() to teleport the drone above ground, then moveToZAsync() to hover,
+    // instead of takeoffAsync().
     global_ned_transform_.reset(new NedTransform(player_start_transform,
                                                  UAirBlueprintLib::GetWorldToMetersScale(this)));
 
@@ -134,6 +147,166 @@ void ASimModeBase::BeginPlay()
     record_tick_count = 0;
     setupInputBindings();
 
+    // Note: CARLA RPC server initialization is handled by SimWorldGameMode (via
+    // ACarlaGameModeBase::InitGame -> GameInstance->NotifyInitGame()).
+
+    // Ensure basic environment exists for maps that lack content (e.g. AirSimAssets)
+    {
+        UWorld* World = GetWorld();
+        UStaticMesh* cube_mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+        UMaterial* base_mat = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+
+        // Check if map has real content (static mesh actors)
+        TArray<AActor*> existing_meshes;
+        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), existing_meshes);
+        if (existing_meshes.Num() == 0 && cube_mesh) {
+            UE_LOG(LogTemp, Warning, TEXT("AirSim: Empty map detected - spawning test environment"));
+
+            // Remove existing ExponentialHeightFog (from WeatherActor, causes black fog)
+            TArray<AActor*> fog_actors;
+            UGameplayStatics::GetAllActorsOfClass(World, AExponentialHeightFog::StaticClass(), fog_actors);
+            for (AActor* fog : fog_actors) {
+                fog->Destroy();
+            }
+
+            FActorSpawnParameters sp;
+            sp.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+            // --- Sun (directional light) ---
+            TArray<AActor*> existing_lights;
+            UGameplayStatics::GetAllActorsOfClass(World, ADirectionalLight::StaticClass(), existing_lights);
+            if (existing_lights.Num() == 0) {
+                ADirectionalLight* sun = World->SpawnActor<ADirectionalLight>(
+                    ADirectionalLight::StaticClass(), FVector::ZeroVector, FRotator(-50.0f, -30.0f, 0.0f), sp);
+                if (sun) {
+                    sun->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+                    UDirectionalLightComponent* lc = Cast<UDirectionalLightComponent>(sun->GetLightComponent());
+                    if (lc) {
+                        lc->SetIntensity(10.0f); // lux-based
+                        lc->SetLightColor(FLinearColor(1.0f, 0.95f, 0.85f));
+                    }
+                    spawned_actors_.Add(sun);
+                }
+            }
+
+            // --- Sky light (ambient) ---
+            {
+                AActor* sla = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, sp);
+                if (sla) {
+                    USceneComponent* root = NewObject<USceneComponent>(sla, TEXT("Root"));
+                    sla->SetRootComponent(root);
+                    root->RegisterComponent();
+                    USkyLightComponent* sl = NewObject<USkyLightComponent>(sla, TEXT("SkyLight"));
+                    sl->SetupAttachment(root);
+                    sl->SetIntensity(3.0f);
+                    sl->SetLightColor(FLinearColor(0.5f, 0.6f, 1.0f));
+                    sl->SourceType = ESkyLightSourceType::SLS_CapturedScene;
+                    sl->bLowerHemisphereIsBlack = false;
+                    sl->RegisterComponent();
+                    sl->RecaptureSky();
+                    spawned_actors_.Add(sla);
+                }
+            }
+
+            // --- Post-process: sky color + exposure fix ---
+            {
+                AActor* ppa = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, sp);
+                if (ppa) {
+                    USceneComponent* root = NewObject<USceneComponent>(ppa, TEXT("Root"));
+                    ppa->SetRootComponent(root);
+                    root->RegisterComponent();
+                    UPostProcessComponent* pp = NewObject<UPostProcessComponent>(ppa, TEXT("PP"));
+                    pp->SetupAttachment(root);
+                    pp->bUnbound = true; // Affect entire world
+                    pp->Settings.bOverride_AutoExposureMinBrightness = true;
+                    pp->Settings.AutoExposureMinBrightness = 1.0f;
+                    pp->Settings.bOverride_AutoExposureMaxBrightness = true;
+                    pp->Settings.AutoExposureMaxBrightness = 2.0f;
+                    pp->Settings.bOverride_AutoExposureBias = true;
+                    pp->Settings.AutoExposureBias = 1.0f;
+                    pp->RegisterComponent();
+                    spawned_actors_.Add(ppa);
+                }
+            }
+
+            // --- Ground: use a very flat CUBE (visible from all angles) ---
+            {
+                AStaticMeshActor* ground = World->SpawnActor<AStaticMeshActor>(
+                    AStaticMeshActor::StaticClass(), FVector(0, 0, -55), FRotator::ZeroRotator, sp);
+                if (ground) {
+                    ground->GetStaticMeshComponent()->SetStaticMesh(cube_mesh);
+                    // Cube is 100x100x100, scale to 500m x 500m x 5cm
+                    ground->SetActorScale3D(FVector(500.0f, 500.0f, 0.01f));
+                    ground->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
+                    if (base_mat) ground->GetStaticMeshComponent()->SetMaterial(0, base_mat);
+                    spawned_actors_.Add(ground);
+                }
+            }
+
+            // --- Buildings: tall cubes arranged in a grid ---
+            {
+                struct Building { FVector pos; FVector scale; };
+                Building buildings[] = {
+                    // Near-field reference buildings (within 50m)
+                    {{1500, 1500, 500},   {3.0f, 3.0f, 10.0f}},
+                    {{1500, -1500, 500},  {3.0f, 3.0f, 10.0f}},
+                    {{-1500, 1500, 500},  {3.0f, 3.0f, 10.0f}},
+                    {{-1500, -1500, 500}, {3.0f, 3.0f, 10.0f}},
+                    // Street-like arrangement
+                    {{3000, 500, 750},    {2.0f, 5.0f, 15.0f}},
+                    {{3000, -500, 750},   {2.0f, 5.0f, 15.0f}},
+                    {{5000, 500, 500},    {3.0f, 3.0f, 10.0f}},
+                    {{5000, -500, 1000},  {2.0f, 2.0f, 20.0f}},
+                    // Distant landmarks
+                    {{8000, 0, 1500},     {5.0f, 5.0f, 30.0f}},
+                    {{0, 8000, 1000},     {4.0f, 4.0f, 20.0f}},
+                    {{-5000, 3000, 600},  {6.0f, 3.0f, 12.0f}},
+                    {{4000, 4000, 400},   {3.0f, 8.0f, 8.0f}},
+                };
+                for (const auto& b : buildings) {
+                    AStaticMeshActor* bld = World->SpawnActor<AStaticMeshActor>(
+                        AStaticMeshActor::StaticClass(), b.pos, FRotator::ZeroRotator, sp);
+                    if (bld) {
+                        bld->GetStaticMeshComponent()->SetStaticMesh(cube_mesh);
+                        bld->SetActorScale3D(b.scale);
+                        bld->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
+                        if (base_mat) bld->GetStaticMeshComponent()->SetMaterial(0, base_mat);
+                        spawned_actors_.Add(bld);
+                    }
+                }
+            }
+
+            // --- Grid lines on ground for visual reference ---
+            {
+                for (int i = -4; i <= 4; i++) {
+                    if (i == 0) continue; // Skip center
+                    // X-direction lines (roads)
+                    AStaticMeshActor* xline = World->SpawnActor<AStaticMeshActor>(
+                        AStaticMeshActor::StaticClass(), FVector(0, i * 2000, -40), FRotator::ZeroRotator, sp);
+                    if (xline) {
+                        xline->GetStaticMeshComponent()->SetStaticMesh(cube_mesh);
+                        xline->SetActorScale3D(FVector(100.0f, 0.1f, 0.02f));
+                        xline->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
+                        if (base_mat) xline->GetStaticMeshComponent()->SetMaterial(0, base_mat);
+                        spawned_actors_.Add(xline);
+                    }
+                    // Y-direction lines
+                    AStaticMeshActor* yline = World->SpawnActor<AStaticMeshActor>(
+                        AStaticMeshActor::StaticClass(), FVector(i * 2000, 0, -40), FRotator::ZeroRotator, sp);
+                    if (yline) {
+                        yline->GetStaticMeshComponent()->SetStaticMesh(cube_mesh);
+                        yline->SetActorScale3D(FVector(0.1f, 100.0f, 0.02f));
+                        yline->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
+                        if (base_mat) yline->GetStaticMeshComponent()->SetMaterial(0, base_mat);
+                        spawned_actors_.Add(yline);
+                    }
+                }
+            }
+
+            UE_LOG(LogTemp, Warning, TEXT("AirSim: Test environment spawned - ground, buildings, grid"));
+        }
+    }
+
     initializeTimeOfDay();
     AirSimSettings::TimeOfDaySetting tod_setting = getSettings().tod_setting;
     setTimeOfDay(tod_setting.enabled, tod_setting.start_datetime, tod_setting.is_start_datetime_dst, tod_setting.celestial_clock_speed, tod_setting.update_interval_secs, tod_setting.move_sun);
@@ -152,6 +325,9 @@ void ASimModeBase::BeginPlay()
         //UWeatherLib::showWeatherMenu(World);
     }
     UAirBlueprintLib::GenerateActorMap(this, scene_object_map);
+
+    // Note: CARLA Episode creation and initialization is handled by SimWorldGameMode
+    // (via ACarlaGameModeBase constructor and BeginPlay).
 
     loading_screen_widget_->AddToViewport();
     loading_screen_widget_->SetVisibility(ESlateVisibility::Hidden);

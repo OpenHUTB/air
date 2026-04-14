@@ -13,6 +13,7 @@
 #include "common/AirSimSettings.hpp"
 #include "HAL/Runnable.h"
 #include "HAL/RunnableThread.h"
+#include "Widgets/SCompoundWidget.h"
 #include "SimWorldGameMode.generated.h"
 
 // Forward declarations
@@ -44,12 +45,12 @@ public:
     void InputEventToggleAll();
 
     // FPS drone control input handlers
-    void InputEventToggleView();
     void InputEventNextWeather();
-    void InputEventNextMap();
     void InputEventToggleMouseCapture();
     void InputEventSpeedUp();
     void InputEventSpeedDown();
+    void InputEventToggleHelpOverlay();
+    void InputEventTogglePhysicsMode();
 
 protected:
     void SetupAirSimInputBindings();
@@ -62,6 +63,10 @@ protected:
     void SetupFPSControl();
     void UpdateFPSControl(float DeltaSeconds);
     void UpdateCameraFollow();
+    void DrawHelpOverlay();
+    void CreateHelpOverlayWidget();
+    void ShowHelpOverlay(bool bShow);
+    void UpdateHelpOverlayText();
 
 private:
     void InitializeAirSimSettings();
@@ -98,9 +103,11 @@ private:
     float DroneSpeed_ = 8.0f;           // m/s, adjustable with +/-
     float FPSYaw_ = 0.0f;              // accumulated yaw (degrees)
     float FPSPitch_ = 0.0f;            // camera pitch (degrees), clamped ±89
-    bool bFirstPersonView_ = true;      // true=1st person, false=3rd person
+    float CameraFollowYaw_ = 0.0f;     // smoothed camera yaw for 3rd person
     bool bMouseCaptured_ = true;        // mouse capture state
+    bool bMouseInitialized_ = false;    // first mouse position read done
     bool bFPSControlActive_ = false;    // FPS control initialized?
+    bool bYawInitialized_ = false;      // FPSYaw_ synced from drone actual yaw?
 
     // Cached spectator
     UPROPERTY()
@@ -121,7 +128,18 @@ private:
     TArray<FWeatherParameters> WeatherPresets_;
     int32 WeatherIndex_ = 0;
 
-    // Map list
-    TArray<FString> AvailableMaps_;
-    int32 MapIndex_ = 0;
+    // One-time drone registration with CARLA ActorDispatcher
+    bool bDroneRegistered_ = false;
+
+    // Help overlay & physics mode (v0.1.5)
+    bool bShowHelp_ = false;
+    bool bPhysicsCollision_ = true;  // default: physics mode ON
+
+    // Slate help overlay widget (Apple-style design)
+    TSharedPtr<SVerticalBox> HelpOverlayContainer_;
+    TSharedPtr<STextBlock> HelpTitleBlock_;
+    TSharedPtr<STextBlock> HelpSubtitleBlock_;
+    TSharedPtr<STextBlock> HelpContentBlock_;
+    TSharedPtr<STextBlock> HelpStatusBlock_;
+    TSharedPtr<SWidget> HelpOverlayWrapper_;
 };

@@ -56,7 +56,24 @@ public:
         return vehicle_api_.get();
     }
 
+    // Physics collision mode: true = bounce off buildings + ground clamp, false = pass through
+    void setPhysicsCollisionEnabled(bool enabled) { bPhysicsCollisionEnabled_ = enabled; }
+    bool isPhysicsCollisionEnabled() const { return bPhysicsCollisionEnabled_; }
+    bool isBouncing() const { return BounceTimeRemaining_ > 0.0f; }
+    FVector getBounceVelocity() const { return BounceVelocityUU_; }
+
 private:
+    bool bPhysicsCollisionEnabled_ = true;
+
+    // Bounce-back state for realistic collision response
+    FVector BounceVelocityUU_ = FVector::ZeroVector;  // UU velocity during bounce
+    float BounceTimeRemaining_ = 0.0f;                // seconds left in bounce animation
+    float BounceCooldown_ = 0.0f;                     // cooldown to prevent repeated hits
+    static constexpr float BOUNCE_DURATION = 0.4f;    // bounce animation duration (seconds)
+    static constexpr float BOUNCE_COOLDOWN = 0.3f;    // min time between bounces
+    static constexpr float BOUNCE_RESTITUTION = 0.6f; // energy retention on bounce (0-1)
+    static constexpr float TRACE_DISTANCE = 120.0f;   // collision probe distance (cm, ~1.2m)
+    static constexpr float MIN_GROUND_CLEARANCE = 5.0f; // cm above ground
     std::unique_ptr<msr::airlib::MultirotorApiBase> vehicle_api_;
     std::unique_ptr<msr::airlib::MultiRotorParams> vehicle_params_;
 
@@ -65,7 +82,7 @@ private:
     std::vector<RotorActuatorInfo> rotor_actuator_info_;
 
     //show info on collision response from physics engine
-    CollisionResponse collision_response;
+    msr::airlib::CollisionResponse collision_response;
 
     MultirotorPawnEvents* pawn_events_;
 
@@ -85,5 +102,5 @@ private:
 
     Pose last_phys_pose_; //for trace lines showing vehicle path
     std::vector<std::string> vehicle_api_messages_;
-    RotorStates rotor_states_;
+    msr::airlib::RotorStates rotor_states_;
 };

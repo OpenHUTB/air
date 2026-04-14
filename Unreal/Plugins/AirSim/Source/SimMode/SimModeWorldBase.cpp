@@ -1,5 +1,5 @@
 #include "SimModeWorldBase.h"
-#include "physics/FastPhysicsEngine.hpp"
+#include "physics/FastPhysicsEngine.hpp" // ground lock fix v0.1.2
 #include "physics/ExternalPhysicsEngine.hpp"
 #include <exception>
 #include "AirBlueprintLib.h"
