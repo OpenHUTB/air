@@ -32,9 +32,10 @@ void FAirSim::ShutdownModule()
 }
 
 #if WITH_EDITOR
-namespace carla {
+namespace carla
+{
 
-void throw_exception(const std::exception &e)
+void throw_exception(const std::exception& e)
 {
     UE_LOG(LogTemp, Fatal, TEXT("Carla exception forwarded via AirSim: %s"), UTF8_TO_TCHAR(e.what()));
     std::terminate();

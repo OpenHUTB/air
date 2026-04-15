@@ -57,7 +57,7 @@ void ACameraDirector::initializeForBeginPlay(ECameraDirectorMode view_mode,
     setupInputBindings();
 
     mode_ = view_mode;
-    mode_before_front_ = view_mode;  // default restore target = initial view
+    mode_before_front_ = view_mode; // default restore target = initial view
 
     follow_actor_ = follow_actor;
     fpv_camera_ = fpv_camera;
@@ -289,8 +289,7 @@ void ACameraDirector::inputEventBackupView()
 void ACameraDirector::inputEventFrontView()
 {
     // Toggle: if already in Front view → restore the view that was active before pressing I
-    if (mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FRONT
-        || mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FPV) {
+    if (mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FRONT || mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FPV) {
         // Restore previous mode
         switch (mode_before_front_) {
         case ECameraDirectorMode::CAMERA_DIRECTOR_MODE_GROUND_OBSERVER:

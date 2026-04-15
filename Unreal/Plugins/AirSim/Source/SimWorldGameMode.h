@@ -100,14 +100,14 @@ private:
     // ---- FPS Drone Control State ----
 
     // Drone speed & orientation
-    float DroneSpeed_ = 8.0f;           // m/s, adjustable with +/-
-    float FPSYaw_ = 0.0f;              // accumulated yaw (degrees)
-    float FPSPitch_ = 0.0f;            // camera pitch (degrees), clamped ±89
-    float CameraFollowYaw_ = 0.0f;     // smoothed camera yaw for 3rd person
-    bool bMouseCaptured_ = true;        // mouse capture state
-    bool bMouseInitialized_ = false;    // first mouse position read done
-    bool bFPSControlActive_ = false;    // FPS control initialized?
-    bool bYawInitialized_ = false;      // FPSYaw_ synced from drone actual yaw?
+    float DroneSpeed_ = 8.0f; // m/s, adjustable with +/-
+    float FPSYaw_ = 0.0f; // accumulated yaw (degrees)
+    float FPSPitch_ = 0.0f; // camera pitch (degrees), clamped ±89
+    float CameraFollowYaw_ = 0.0f; // smoothed camera yaw for 3rd person
+    bool bMouseCaptured_ = true; // mouse capture state
+    bool bMouseInitialized_ = false; // first mouse position read done
+    bool bFPSControlActive_ = false; // FPS control initialized?
+    bool bYawInitialized_ = false; // FPSYaw_ synced from drone actual yaw?
 
     // Cached spectator
     UPROPERTY()
@@ -119,10 +119,10 @@ private:
 
     // Shared state between game thread and drone control thread
     FCriticalSection DroneControlLock_;
-    FVector DesiredVelocityNED_ = FVector::ZeroVector;  // NED velocity
+    FVector DesiredVelocityNED_ = FVector::ZeroVector; // NED velocity
     float DesiredYaw_ = 0.0f;
-    bool bShouldHover_ = true;     // true when no movement input
-    bool bDroneReady_ = false;     // set by worker after takeoff
+    bool bShouldHover_ = true; // true when no movement input
+    bool bDroneReady_ = false; // set by worker after takeoff
 
     // Weather presets
     TArray<FWeatherParameters> WeatherPresets_;
@@ -133,7 +133,7 @@ private:
 
     // Help overlay & physics mode (v0.1.5)
     bool bShowHelp_ = false;
-    bool bPhysicsCollision_ = true;  // default: physics mode ON
+    bool bPhysicsCollision_ = true; // default: physics mode ON
 
     // Slate help overlay widget (Apple-style design)
     TSharedPtr<SVerticalBox> HelpOverlayContainer_;

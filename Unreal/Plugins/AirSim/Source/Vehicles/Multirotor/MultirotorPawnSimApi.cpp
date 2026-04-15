@@ -113,9 +113,10 @@ void MultirotorPawnSimApi::updateRendering(float dt)
             // Teleport mode = pass through everything (invincible/noclip).
             // Ground clamp always active to prevent falling through CARLA terrain.
             if (bPhysicsCollisionEnabled_) {
-                PawnSimApi::setPose(last_phys_pose_, false);  // sweep mode: UE4 detects collisions
-            } else {
-                PawnSimApi::setPose(last_phys_pose_, true);   // teleport mode: pass through
+                PawnSimApi::setPose(last_phys_pose_, false); // sweep mode: UE4 detects collisions
+            }
+            else {
+                PawnSimApi::setPose(last_phys_pose_, true); // teleport mode: pass through
             }
         }
 
@@ -132,11 +133,10 @@ void MultirotorPawnSimApi::updateRendering(float dt)
                     GroundHit,
                     DronePos + FVector(0, 0, 10000.0f),
                     DronePos - FVector(0, 0, 500.0f),
-                    ECC_WorldStatic, GroundParams))
-            {
+                    ECC_WorldStatic,
+                    GroundParams)) {
                 float GroundZ = GroundHit.ImpactPoint.Z;
-                if (DronePos.Z < GroundZ + MIN_GROUND_CLEARANCE)
-                {
+                if (DronePos.Z < GroundZ + MIN_GROUND_CLEARANCE) {
                     DronePos.Z = GroundZ + MIN_GROUND_CLEARANCE;
                     pawn->SetActorLocation(DronePos, false, nullptr, ETeleportType::TeleportPhysics);
                 }

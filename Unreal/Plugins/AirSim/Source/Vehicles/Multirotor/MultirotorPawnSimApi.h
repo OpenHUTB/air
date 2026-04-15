@@ -66,13 +66,13 @@ private:
     bool bPhysicsCollisionEnabled_ = true;
 
     // Bounce-back state for realistic collision response
-    FVector BounceVelocityUU_ = FVector::ZeroVector;  // UU velocity during bounce
-    float BounceTimeRemaining_ = 0.0f;                // seconds left in bounce animation
-    float BounceCooldown_ = 0.0f;                     // cooldown to prevent repeated hits
-    static constexpr float BOUNCE_DURATION = 0.4f;    // bounce animation duration (seconds)
-    static constexpr float BOUNCE_COOLDOWN = 0.3f;    // min time between bounces
+    FVector BounceVelocityUU_ = FVector::ZeroVector; // UU velocity during bounce
+    float BounceTimeRemaining_ = 0.0f; // seconds left in bounce animation
+    float BounceCooldown_ = 0.0f; // cooldown to prevent repeated hits
+    static constexpr float BOUNCE_DURATION = 0.4f; // bounce animation duration (seconds)
+    static constexpr float BOUNCE_COOLDOWN = 0.3f; // min time between bounces
     static constexpr float BOUNCE_RESTITUTION = 0.6f; // energy retention on bounce (0-1)
-    static constexpr float TRACE_DISTANCE = 120.0f;   // collision probe distance (cm, ~1.2m)
+    static constexpr float TRACE_DISTANCE = 120.0f; // collision probe distance (cm, ~1.2m)
     static constexpr float MIN_GROUND_CLEARANCE = 5.0f; // cm above ground
     std::unique_ptr<msr::airlib::MultirotorApiBase> vehicle_api_;
     std::unique_ptr<msr::airlib::MultiRotorParams> vehicle_params_;
