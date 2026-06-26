@@ -12,6 +12,7 @@
 #include "Vehicles/Multirotor/MultirotorPawnSimApi.h"
 #include "Vehicles/Car/SimModeCar.h"
 #include "Vehicles/ComputerVision/SimModeComputerVision.h"
+#include "Vehicles/Rov/SimModeWorldRov.h"
 
 #include "common/AirSimSettings.hpp"
 #include "common/Common.hpp"
@@ -961,6 +962,9 @@ void ASimWorldGameMode::CreateSimMode()
             FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
     else if (simmode_name == AirSimSettings::kSimModeTypeComputerVision)
         SimMode_ = GetWorld()->SpawnActor<ASimModeComputerVision>(
+            FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
+    else if (simmode_name == "Rov")
+        SimMode_ = GetWorld()->SpawnActor<ASimModeWorldRov>(
             FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
     else {
         UAirBlueprintLib::ShowMessage(EAppMsgType::Ok,
