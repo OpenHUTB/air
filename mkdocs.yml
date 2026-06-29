@@ -37,7 +37,7 @@ copyright: Copyright &copy; 2021 Microsoft Research
 
 nav:
   - "Home":
-    - "Home": 'README.md'
+    - "Home": 'index.md'
   - "Changelog": 'CHANGELOG.md'
   - "Building AirSim":
     - "Download Binaries": 'use_precompiled.md'
