@@ -10,36 +10,44 @@ Our goal is to develop AirSim as a platform for AI research to experiment with d
 
 Drones in AirSim
 
-[![AirSim Drone Demo Video](docs/images/demo_video.png)](https://youtu.be/-WfTr1-OBGQ)
+[![AirSim Drone Demo Video](images/demo_video.png)](https://youtu.be/-WfTr1-OBGQ)
 
 Cars in AirSim
 
-[![AirSim Car Demo Video](docs/images/car_demo_video.png)](https://youtu.be/gnz1X3UNM5Y)
+[![AirSim Car Demo Video](images/car_demo_video.png)](https://youtu.be/gnz1X3UNM5Y)
 
 
 ## How to Get It
 
 ### Windows
+
 [![Build Status](https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml/badge.svg)](https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml)
+
 * [Download binaries](https://github.com/Microsoft/AirSim/releases)
+
 * [Build it](https://microsoft.github.io/AirSim/build_windows)
 
 ### Linux
+
 [![Build Status](https://github.com/microsoft/AirSim/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/microsoft/AirSim/actions/workflows/test_ubuntu.yml)
+
 * [Download binaries](https://github.com/Microsoft/AirSim/releases)
+
 * [Build it](https://microsoft.github.io/AirSim/build_linux)
 
 ### macOS
+
 [![Build Status](https://github.com/microsoft/AirSim/actions/workflows/test_macos.yml/badge.svg)](https://github.com/microsoft/AirSim/actions/workflows/test_macos.yml)
+
 * [Build it](https://microsoft.github.io/AirSim/build_macos)
 
-For more details, see the [use precompiled binaries](docs/use_precompiled.md) document.
+For more details, see the [use precompiled binaries](use_precompiled.md) document.
 
 ## How to Use It
 
 ### Documentation
 
-View our [detailed documentation](https://microsoft.github.io/AirSim/) on all aspects of AirSim.
+View our detailed [English documentation](https://microsoft.github.io/AirSim/)/[中文文档](https://openhutb.github.io/air_doc) on all aspects of AirSim.
 
 ### Manual drive
 
@@ -47,9 +55,9 @@ If you have remote control (RC) as shown below, you can manually control the dro
 
 [More details](https://microsoft.github.io/AirSim/remote_control)
 
-![record screenshot](docs/images/AirSimDroneManual.gif)
+![record screenshot](images/AirSimDroneManual.gif)
 
-![record screenshot](docs/images/AirSimCarManual.gif)
+![record screenshot](images/AirSimCarManual.gif)
 
 
 ### Programmatic control
@@ -66,7 +74,7 @@ Note that you can use [SimMode setting](https://microsoft.github.io/AirSim/setti
 
 There are two ways you can generate training data from AirSim for deep learning. The easiest way is to simply press the record button in the lower right corner. This will start writing pose and images for each frame. The data logging code is pretty simple and you can modify it to your heart's content.
 
-![record screenshot](docs/images/record_data.png)
+![record screenshot](images/record_data.png)
 
 A better way to generate training data exactly the way you want is by accessing the APIs. This allows you to be in full control of how, what, where and when you want to log data.
 
@@ -80,7 +88,7 @@ Yet another way to use AirSim is the so-called "Computer Vision" mode. In this m
 
 Press F10 to see various options available for weather effects. You can also control the weather using [APIs](https://microsoft.github.io/AirSim/apis#weather-apis). Press F1 to see other options available.
 
-![record screenshot](docs/images/weather_menu.png)
+![record screenshot](images/weather_menu.png)
 
 ## Tutorials
 
@@ -141,7 +149,7 @@ We also have an AirSim group on [Facebook](https://www.facebook.com/groups/12258
 * [Support for multiple drones in Unity](https://github.com/microsoft/AirSim/pull/3128)
 * [Control manual camera speed through the keyboard](https://github.com/microsoft/AirSim/pulls?page=6&q=is%3Apr+is%3Aclosed+sort%3Aupdated-desc#:~:text=1-,Control%20manual%20camera%20speed%20through%20the%20keyboard,-%233221%20by%20saihv)
 
-For complete list of changes, view our [Changelog](docs/CHANGELOG.md)
+For complete list of changes, view our [Changelog](CHANGELOG.md)
 
 ## FAQ
 
