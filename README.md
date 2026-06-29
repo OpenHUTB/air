@@ -14,30 +14,11 @@ Air 中的汽车
 
 [![AirSim Car Demo Video](docs/images/car_demo_video.png)](https://youtu.be/gnz1X3UNM5Y)
 
-
-## 如何获得它
-
-### Windows
-[![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_windows.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_windows.yml)
-* [下载可执行文件](https://github.com/OpenHUTB/air/releases)
-* [构建它](https://openhutb.github.io/air_doc/build_windows/)
-
-### Linux
-[![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_ubuntu.yml)
-* [下载可执行文件](https://github.com/OpenHUTB/air/releases)
-* [构建它](https://openhutb.github.io/air_doc/build_linux/)
-
-### macOS
-[![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_macos.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_macos.yml)
-* [构建它](https://openhutb.github.io/air_doc/build_macos/)
-
-更多详情请参阅[使用预编译二进制文件](https://openhutb.github.io/air_doc/use_precompiled/)的文档。
-
 ## 如何使用它
 
 ### 文档
 
-查看我们关于 Air 各个方面的[详细文档](https://openhutb.github.io/air_doc/)。
+查看我们关于 Air 各个方面详细 [English documentation](https://microsoft.github.io/AirSim/)/[中文文档](https://openhutb.github.io/air_doc)。
 
 ### 手动驾驶
 
@@ -89,6 +70,26 @@ Air 提供 API，方便您以编程方式与模拟中的载具进行交互。您
 - [使用 AirSim 进行强化学习](https://microsoft.github.io/AirSim/reinforcement_learning) 
 - [自动驾驶烹饪手册](https://aka.ms/AutonomousDrivingCookbook) 
 - [使用 TensorFlow 实现简单的避障](https://github.com/simondlevy/AirSimTensorFlow) 
+
+
+## 如何获得它
+
+### Windows
+[![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_windows.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_windows.yml)
+* [下载可执行文件](https://github.com/OpenHUTB/air/releases)
+* [构建它](https://openhutb.github.io/air_doc/build_windows/)
+
+### Linux
+[![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_ubuntu.yml)
+* [下载可执行文件](https://github.com/OpenHUTB/air/releases)
+* [构建它](https://openhutb.github.io/air_doc/build_linux/)
+
+### macOS
+[![Build Status](https://github.com/OpenHUTB/air/actions/workflows/test_macos.yml/badge.svg)](https://github.com/OpenHUTB/air/actions/workflows/test_macos.yml)
+* [构建它](https://openhutb.github.io/air_doc/build_macos/)
+
+更多详情请参阅[使用预编译二进制文件](https://openhutb.github.io/air_doc/use_precompiled/)的文档。
+
 
 ## 参与
 
