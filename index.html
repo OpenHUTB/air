@@ -344,30 +344,44 @@
 <p>Our goal is to develop AirSim as a platform for AI research to experiment with deep learning, computer vision and reinforcement learning algorithms for autonomous vehicles. For this purpose, AirSim also exposes APIs to retrieve data and control vehicles in a platform independent way.</p>
 <p><strong>Check out the quick 1.5 minute demo</strong></p>
 <p>Drones in AirSim</p>
-<p><a href="https://youtu.be/-WfTr1-OBGQ"><img alt="AirSim Drone Demo Video" src="docs/images/demo_video.png" /></a></p>
+<p><a href="https://youtu.be/-WfTr1-OBGQ"><img alt="AirSim Drone Demo Video" src="images/demo_video.png" /></a></p>
 <p>Cars in AirSim</p>
-<p><a href="https://youtu.be/gnz1X3UNM5Y"><img alt="AirSim Car Demo Video" src="docs/images/car_demo_video.png" /></a></p>
+<p><a href="https://youtu.be/gnz1X3UNM5Y"><img alt="AirSim Car Demo Video" src="images/car_demo_video.png" /></a></p>
 <h2 id="how-to-get-it">How to Get It<a class="headerlink" href="#how-to-get-it" title="Permanent link">#</a></h2>
 <h3 id="windows">Windows<a class="headerlink" href="#windows" title="Permanent link">#</a></h3>
-<p><a href="https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml"><img alt="Build Status" src="https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml/badge.svg" /></a>
-* <a href="https://github.com/Microsoft/AirSim/releases">Download binaries</a>
-* <a href="https://microsoft.github.io/AirSim/build_windows">Build it</a></p>
+<p><a href="https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml"><img alt="Build Status" src="https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml/badge.svg" /></a></p>
+<ul>
+<li>
+<p><a href="https://github.com/Microsoft/AirSim/releases">Download binaries</a></p>
+</li>
+<li>
+<p><a href="https://microsoft.github.io/AirSim/build_windows">Build it</a></p>
+</li>
+</ul>
 <h3 id="linux">Linux<a class="headerlink" href="#linux" title="Permanent link">#</a></h3>
-<p><a href="https://github.com/microsoft/AirSim/actions/workflows/test_ubuntu.yml"><img alt="Build Status" src="https://github.com/microsoft/AirSim/actions/workflows/test_ubuntu.yml/badge.svg" /></a>
-* <a href="https://github.com/Microsoft/AirSim/releases">Download binaries</a>
-* <a href="https://microsoft.github.io/AirSim/build_linux">Build it</a></p>
+<p><a href="https://github.com/microsoft/AirSim/actions/workflows/test_ubuntu.yml"><img alt="Build Status" src="https://github.com/microsoft/AirSim/actions/workflows/test_ubuntu.yml/badge.svg" /></a></p>
+<ul>
+<li>
+<p><a href="https://github.com/Microsoft/AirSim/releases">Download binaries</a></p>
+</li>
+<li>
+<p><a href="https://microsoft.github.io/AirSim/build_linux">Build it</a></p>
+</li>
+</ul>
 <h3 id="macos">macOS<a class="headerlink" href="#macos" title="Permanent link">#</a></h3>
-<p><a href="https://github.com/microsoft/AirSim/actions/workflows/test_macos.yml"><img alt="Build Status" src="https://github.com/microsoft/AirSim/actions/workflows/test_macos.yml/badge.svg" /></a>
-* <a href="https://microsoft.github.io/AirSim/build_macos">Build it</a></p>
-<p>For more details, see the <a href="docs/use_precompiled.md">use precompiled binaries</a> document.</p>
+<p><a href="https://github.com/microsoft/AirSim/actions/workflows/test_macos.yml"><img alt="Build Status" src="https://github.com/microsoft/AirSim/actions/workflows/test_macos.yml/badge.svg" /></a></p>
+<ul>
+<li><a href="https://microsoft.github.io/AirSim/build_macos">Build it</a></li>
+</ul>
+<p>For more details, see the <a href="use_precompiled/">use precompiled binaries</a> document.</p>
 <h2 id="how-to-use-it">How to Use It<a class="headerlink" href="#how-to-use-it" title="Permanent link">#</a></h2>
 <h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">#</a></h3>
-<p>View our <a href="https://microsoft.github.io/AirSim/">detailed documentation</a> on all aspects of AirSim.</p>
+<p>View our detailed <a href="https://microsoft.github.io/AirSim/">English documentation</a>/<a href="https://openhutb.github.io/air_doc">中文文档</a> on all aspects of AirSim.</p>
 <h3 id="manual-drive">Manual drive<a class="headerlink" href="#manual-drive" title="Permanent link">#</a></h3>
 <p>If you have remote control (RC) as shown below, you can manually control the drone in the simulator. For cars, you can use arrow keys to drive manually.</p>
 <p><a href="https://microsoft.github.io/AirSim/remote_control">More details</a></p>
-<p><img alt="record screenshot" src="docs/images/AirSimDroneManual.gif" /></p>
-<p><img alt="record screenshot" src="docs/images/AirSimCarManual.gif" /></p>
+<p><img alt="record screenshot" src="images/AirSimDroneManual.gif" /></p>
+<p><img alt="record screenshot" src="images/AirSimCarManual.gif" /></p>
 <h3 id="programmatic-control">Programmatic control<a class="headerlink" href="#programmatic-control" title="Permanent link">#</a></h3>
 <p>AirSim exposes APIs so you can interact with the vehicle in the simulation programmatically. You can use these APIs to retrieve images, get state, control the vehicle and so on. The APIs are exposed through the RPC, and are accessible via a variety of languages, including C++, Python, C# and Java.</p>
 <p>These APIs are also available as part of a separate, independent cross-platform library, so you can deploy them on a companion computer on your vehicle. This way you can write and test your code in the simulator, and later execute it on the real vehicles. Transfer learning and related research is one of our focus areas.</p>
@@ -375,14 +389,14 @@
 <p><a href="https://microsoft.github.io/AirSim/apis">More details</a></p>
 <h3 id="gathering-training-data">Gathering training data<a class="headerlink" href="#gathering-training-data" title="Permanent link">#</a></h3>
 <p>There are two ways you can generate training data from AirSim for deep learning. The easiest way is to simply press the record button in the lower right corner. This will start writing pose and images for each frame. The data logging code is pretty simple and you can modify it to your heart's content.</p>
-<p><img alt="record screenshot" src="docs/images/record_data.png" /></p>
+<p><img alt="record screenshot" src="images/record_data.png" /></p>
 <p>A better way to generate training data exactly the way you want is by accessing the APIs. This allows you to be in full control of how, what, where and when you want to log data.</p>
 <h3 id="computer-vision-mode">Computer Vision mode<a class="headerlink" href="#computer-vision-mode" title="Permanent link">#</a></h3>
 <p>Yet another way to use AirSim is the so-called "Computer Vision" mode. In this mode, you don't have vehicles or physics. You can use the keyboard to move around the scene, or use APIs to position available cameras in any arbitrary pose, and collect images such as depth, disparity, surface normals or object segmentation.</p>
 <p><a href="https://microsoft.github.io/AirSim/image_apis">More details</a></p>
 <h3 id="weather-effects">Weather Effects<a class="headerlink" href="#weather-effects" title="Permanent link">#</a></h3>
 <p>Press F10 to see various options available for weather effects. You can also control the weather using <a href="https://microsoft.github.io/AirSim/apis#weather-apis">APIs</a>. Press F1 to see other options available.</p>
-<p><img alt="record screenshot" src="docs/images/weather_menu.png" /></p>
+<p><img alt="record screenshot" src="images/weather_menu.png" /></p>
 <h2 id="tutorials">Tutorials<a class="headerlink" href="#tutorials" title="Permanent link">#</a></h2>
 <ul>
 <li><a href="https://youtu.be/1oY8Qu5maQQ">Video - Setting up AirSim with Pixhawk Tutorial</a> by Chris Lovett</li>
@@ -430,7 +444,7 @@
 <li><a href="https://github.com/microsoft/AirSim/pull/3128">Support for multiple drones in Unity</a></li>
 <li><a href="https://github.com/microsoft/AirSim/pulls?page=6&amp;q=is%3Apr+is%3Aclosed+sort%3Aupdated-desc#:~:text=1-,Control%20manual%20camera%20speed%20through%20the%20keyboard,-%233221%20by%20saihv">Control manual camera speed through the keyboard</a></li>
 </ul>
-<p>For complete list of changes, view our <a href="docs/CHANGELOG.md">Changelog</a></p>
+<p>For complete list of changes, view our <a href="CHANGELOG/">Changelog</a></p>
 <h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">#</a></h2>
 <p>If you run into problems, check the <a href="https://microsoft.github.io/AirSim/faq">FAQ</a> and feel free to post issues in the  <a href="https://github.com/Microsoft/AirSim/issues">AirSim</a> repository.</p>
 <h2 id="code-of-conduct">Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Permanent link">#</a></h2>
