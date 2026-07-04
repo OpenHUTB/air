@@ -1,6 +1,6 @@
 # 欢迎来到低空模拟器
 
-Air 是一款基于[模拟器引擎](https://github.com/OpenHUTB/engine)的无人机、汽车等载具的低空模拟器。它是开源的、跨平台的，支持与 PX4 和 ArduPilot 等主流飞行控制器进行软件在环（Software-In-the-Loop, SIL）仿真，也支持与 PX4 进行硬件在环（Hardware-In-Loop, HIL）仿真，从而实现物理和视觉上都高度逼真的模拟。它以引擎插件的形式开发，可以直接集成到任何虚幻引擎环境中。同样，我们也将 Air 集成到[人车模拟器](https://github.com/OpenHUTB/hutb) 中。
+Air 是一款基于[模拟器引擎](https://github.com/OpenHUTB/engine)的无人机、汽车等载具的低空模拟器。它是开源的、跨平台的，支持与 PX4 和 [ArduPilot](https://openhutb.github.io/air_doc/ardupilot/sitl_with_airsim/) 等主流飞行控制器进行软件在环（Software-In-the-Loop, SIL）仿真，也支持与 PX4 进行硬件在环（Hardware-In-Loop, HIL）仿真，从而实现物理和视觉上都高度逼真的模拟。它以引擎插件的形式开发，可以直接集成到任何虚幻引擎环境中。同样，我们也将 Air 集成到[人车模拟器](https://github.com/OpenHUTB/hutb) 中。
 
 我们的目标是将 Air 开发成一个人工智能研究平台，用于试验深度学习、计算机视觉和强化学习算法在无人机、汽车等载具中的应用。为此，AirSim 还提供了 API，以便以平台无关的方式获取数据和控制载具。
 
