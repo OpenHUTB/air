@@ -2,23 +2,23 @@
 
 Air 是一款基于[模拟器引擎](https://github.com/OpenHUTB/engine)的无人机、汽车等载具的低空模拟器。它是开源的、跨平台的，支持与 PX4 和 [ArduPilot](https://openhutb.github.io/air_doc/ardupilot/sitl_with_airsim/) 等主流飞行控制器进行软件在环（Software-In-the-Loop, SIL）仿真，也支持与 PX4 进行硬件在环（Hardware-In-Loop, HIL）仿真，从而实现物理和视觉上都高度逼真的模拟。它以引擎插件的形式开发，可以直接集成到任何虚幻引擎环境中。同样，我们也将 Air 集成到[人车模拟器](https://github.com/OpenHUTB/hutb) 中。
 
-我们的目标是将 Air 开发成一个人工智能研究平台，用于试验深度学习、计算机视觉和强化学习算法在无人机、汽车等载具中的应用。为此，AirSim 还提供了 API，以便以平台无关的方式获取数据和控制载具。
+我们的目标是将 Air 开发成一个人工智能研究平台，用于试验深度学习、计算机视觉和强化学习算法在无人机、无人车、[水下机器人](https://openhutb.github.io/mujoco_plugin/underwater/) 等载具中的应用。为此，Air 还提供了 [API](https://openhutb.github.io/air_doc/apis/)，以便以平台无关的方式获取数据和控制载具。
 
 **观看时长 1.5 分钟的快速演示**
 
 Air 中的无人机
 
-[![AirSim Drone Demo Video](docs/images/demo_video.png)](https://youtu.be/-WfTr1-OBGQ)
+[![Air Drone Demo Video](docs/images/demo_video.png)](https://youtu.be/-WfTr1-OBGQ)
 
 Air 中的汽车
 
-[![AirSim Car Demo Video](docs/images/car_demo_video.png)](https://youtu.be/gnz1X3UNM5Y)
+[![Air Car Demo Video](docs/images/car_demo_video.png)](https://youtu.be/gnz1X3UNM5Y)
 
 ## 如何使用它
 
 ### 文档
 
-查看我们关于 Air 各个方面详细 [English documentation](https://microsoft.github.io/AirSim/)/[中文文档](https://openhutb.github.io/air_doc)。
+查看我们关于 Air 各个方面详细 [English documentation](https://openhutb.github.io/air)/[中文文档](https://openhutb.github.io/air_doc)。
 
 ### 手动驾驶
 
@@ -39,7 +39,7 @@ Air 提供 API，方便您以编程方式与模拟中的载具进行交互。您
 
 请注意，您可以使用 [SimMode 设置](https://openhutb.github.io/air_doc/settings/#simmode) 来指定默认载具或新的 [ComputerVision 模式](https://openhutb.github.io/air_doc/image_apis/#computer-vision-mode-1) ，这样每次启动 Air 时就不会出现提示。
 
-[更多详细信息](https://microsoft.github.io/AirSim/apis)
+[更多详细信息](https://openhutb.github.io/air_doc/apis/)
 
 ### 收集训练数据
 
@@ -67,7 +67,7 @@ Air 提供 API，方便您以编程方式与模拟中的载具进行交互。您
 - [视频 - 使用 AirSim 和 Pixhawk 的教程](https://youtu.be/HNWdYrtw3f0) 
 - [视频 - 在 AirSim 中使用现成的环境](https://www.youtube.com/watch?v=y09VbdQWvQY) 
 - [网络研讨会 - 利用高保真仿真实现自主系统](https://note.microsoft.com/MSR-Webinar-AirSim-Registration-On-Demand.html) 
-- [使用 AirSim 进行强化学习](https://microsoft.github.io/AirSim/reinforcement_learning) 
+- [使用 AirSim 进行强化学习](https://openhutb.github.io/air_doc/reinforcement_learning/) 
 - [自动驾驶烹饪手册](https://aka.ms/AutonomousDrivingCookbook) 
 - [使用 TensorFlow 实现简单的避障](https://github.com/simondlevy/AirSimTensorFlow) 
 
