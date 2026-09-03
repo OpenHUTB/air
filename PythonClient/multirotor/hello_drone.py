@@ -1,3 +1,5 @@
+import argparse
+
 import setup_path
 import airsim
 
@@ -7,8 +9,17 @@ import tempfile
 import pprint
 import cv2
 
+argparser = argparse.ArgumentParser(
+    description=__doc__)
+argparser.add_argument(
+    '--host',
+    metavar='H',
+    default='127.0.0.1',
+    help='IP of the host Air Simulator (default: 127.0.0.1)')
+args = argparser.parse_args()
+
 # connect to the AirSim simulator
-client = airsim.MultirotorClient()
+client = airsim.MultirotorClient(ip=args.host)
 client.confirmConnection()
 client.enableApiControl(True)
 
