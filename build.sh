@@ -73,9 +73,12 @@ else
       if [ "$VERSION" == "22.04" ]; then
         export CC="clang-11"
         export CXX="clang++-11"
-      else 
+      elif [ "$VERSION" == "20.04" ] && [ -f /usr/bin/clang ]; then
         export CC="/usr/bin/clang"
         export CXX="/usr/bin/clang++"
+      else
+        export CC="/usr/bin/gcc"
+        export CXX="/usr/bin/g++"
       fi
     fi
 fi
