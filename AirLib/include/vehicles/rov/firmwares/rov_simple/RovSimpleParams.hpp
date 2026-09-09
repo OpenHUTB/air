@@ -31,7 +31,6 @@ namespace airlib
         {
             auto& params = getParams();
             setupBlueROV2Heavy(params);
-            
         }
 
         virtual const SensorFactory* getSensorFactory() const override

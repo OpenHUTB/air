@@ -1695,7 +1695,7 @@ namespace airlib
                     }
                 }
                 // if (isarmed) {
-                    // normalizeActuatorControls(); //don't do this. Don't want to mess with controls from mavlink
+                // normalizeActuatorControls(); //don't do this. Don't want to mess with controls from mavlink
                 // }
 
                 handleLockStep();

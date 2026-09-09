@@ -454,15 +454,14 @@ namespace airlib
             return static_cast<uint16_t>(angle * 500.0f + 1500.0f);
         }
         //static uint16_t thrustToPwm(float thrust)
-       // {
-       //     return static_cast<uint16_t>((thrust < 0 ? 0 : thrust) * 1000.0f + 1000.0f);
-       // }
+        // {
+        //     return static_cast<uint16_t>((thrust < 0 ? 0 : thrust) * 1000.0f + 1000.0f);
+        // }
 
-
-       static uint16_t thrustToPwm(float thrust)
-       {
-           return static_cast<uint16_t>((thrust < 0 ? 0 : thrust) * 1000.0f + 1000.0f);
-       }
+        static uint16_t thrustToPwm(float thrust)
+        {
+            return static_cast<uint16_t>((thrust < 0 ? 0 : thrust) * 1000.0f + 1000.0f);
+        }
         static uint16_t switchTopwm(float switchVal, uint maxSwitchVal = 1)
         {
             return static_cast<uint16_t>(1000.0f * switchVal / maxSwitchVal + 1000.0f);

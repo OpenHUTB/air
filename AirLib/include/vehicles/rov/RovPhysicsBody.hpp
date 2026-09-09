@@ -22,7 +22,7 @@ namespace airlib
     {
     public:
         RovPhysicsBody(RovBodyParams* params, VehicleApiBase* vehicle_api,
-                 Kinematics* kinematics, Environment* environment)
+                       Kinematics* kinematics, Environment* environment)
             : params_(params), vehicle_api_(vehicle_api)
         {
             setName("RovPhysicsBody");
@@ -105,7 +105,7 @@ namespace airlib
             for (uint rotor_index = 0; rotor_index < rotors_.size(); ++rotor_index) {
                 rotors_.at(rotor_index).setControlSignal(vehicle_api_->getActuation(rotor_index));
                 //rotors_.at(rotor_index).setAngleSignal(vehicle_api_->getActuation(rotor_index));
-                
+
                 //rotors_.at(rotor_index).setControlSignal(vehicle_api_->getActuation(3 + 2 * rotor_index));
                 //rotors_.at(rotor_index).setAngleSignal(vehicle_api_->getActuation(3 + 2 * rotor_index + 1));
             }
@@ -138,19 +138,17 @@ namespace airlib
         //physics body interface
         virtual uint wrenchVertexCount() const override
         {
-            return params_->getParams().rotor_count ; //+1 for aerovertex
+            return params_->getParams().rotor_count; //+1 for aerovertex
         }
         virtual PhysicsBodyVertex& getWrenchVertex(uint index) override
         {
-          
-                return rotors_.at(index );
-            
+
+            return rotors_.at(index);
         }
         virtual const PhysicsBodyVertex& getWrenchVertex(uint index) const override
         {
-         
-                return rotors_.at(index);
-            
+
+            return rotors_.at(index);
         }
 
         virtual real_T getRestitution() const override

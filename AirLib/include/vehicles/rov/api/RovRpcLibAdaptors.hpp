@@ -126,6 +126,4 @@ namespace airlib_rpclib
 }
 } //namespace
 
-
-
 #endif

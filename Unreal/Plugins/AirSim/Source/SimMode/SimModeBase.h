@@ -209,7 +209,6 @@ private:
     common_utils::UniqueValueMap<std::string, APIPCamera*> external_cameras_;
     std::unique_ptr<UnrealImageCapture> external_image_capture_;
 
-
     bool lidar_checks_done_ = false;
     bool lidar_draw_debug_points_ = false;
     static ASimModeBase* SIMMODE;

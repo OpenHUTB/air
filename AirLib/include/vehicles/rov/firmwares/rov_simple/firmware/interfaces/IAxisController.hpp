@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <cstdint>
 #include "IUpdatable.hpp"
 #include "IGoal.hpp"

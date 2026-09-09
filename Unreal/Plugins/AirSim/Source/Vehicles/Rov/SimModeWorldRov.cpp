@@ -159,7 +159,7 @@ std::unique_ptr<PawnSimApi> ASimModeWorldRov::createVehicleSimApi(
     return vehicle_sim_api;
 }
 msr::airlib::VehicleApiBase* ASimModeWorldRov::getVehicleApi(const PawnSimApi::Params& pawn_sim_api_params,
-                                                                   const PawnSimApi* sim_api) const
+                                                             const PawnSimApi* sim_api) const
 {
     const auto Rov_sim_api = static_cast<const RovPawnSimApi*>(sim_api);
     return Rov_sim_api->getVehicleApi();

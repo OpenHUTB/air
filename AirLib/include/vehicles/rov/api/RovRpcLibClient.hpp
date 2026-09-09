@@ -26,12 +26,12 @@ namespace airlib
         RovRpcLibClient* landAsync(float timeout_sec = 60, const std::string& vehicle_name = "");
         RovRpcLibClient* goHomeAsync(float timeout_sec = Utils::max<float>(), const std::string& vehicle_name = "");
         RovRpcLibClient* moveToGPSAsync(float latitude, float longitude, float altitude, float velocity, float timeout_sec = Utils::max<float>(),
-                                               DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(),
-                                               float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
+                                        DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(),
+                                        float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
         RovRpcLibClient* moveByVelocityBodyFrameAsync(float vx, float vy, float vz, float duration,
-                                                            DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
+                                                      DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
         RovRpcLibClient* moveByVelocityZBodyFrameAsync(float vx, float vy, float z, float duration,
-                                                             DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
+                                                       DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
         RovRpcLibClient* moveByRollPitchYawZAsync(float roll, float pitch, float yaw, float z, float duration, const std::string& vehicle_name = "");
         RovRpcLibClient* moveByRollPitchYawThrottleAsync(float roll, float pitch, float yaw, float throttle, float duration, const std::string& vehicle_name = "");
         RovRpcLibClient* moveByRollPitchYawrateThrottleAsync(float roll, float pitch, float yaw_rate, float throttle, float duration, const std::string& vehicle_name = "");
@@ -39,19 +39,19 @@ namespace airlib
         RovRpcLibClient* moveByAngleRatesZAsync(float roll_rate, float pitch_rate, float yaw_rate, float z, float duration, const std::string& vehicle_name = "");
         RovRpcLibClient* moveByAngleRatesThrottleAsync(float roll_rate, float pitch_rate, float yaw_rate, float throttle, float duration, const std::string& vehicle_name = "");
         RovRpcLibClient* moveByVelocityAsync(float vx, float vy, float vz, float duration,
-                                                   DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
+                                             DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
         RovRpcLibClient* moveByVelocityZAsync(float vx, float vy, float z, float duration,
-                                                    DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
+                                              DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
         RovRpcLibClient* moveOnPathAsync(const vector<Vector3r>& path, float velocity, float timeout_sec = Utils::max<float>(),
-                                               DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(),
-                                               float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
+                                         DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(),
+                                         float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
         RovRpcLibClient* moveToPositionAsync(float x, float y, float z, float velocity, float timeout_sec = Utils::max<float>(),
-                                                   DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(),
-                                                   float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
+                                             DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(),
+                                             float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
         RovRpcLibClient* moveToZAsync(float z, float velocity, float timeout_sec = Utils::max<float>(),
-                                            const YawMode& yaw_mode = YawMode(), float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
+                                      const YawMode& yaw_mode = YawMode(), float lookahead = -1, float adaptive_lookahead = 1, const std::string& vehicle_name = "");
         RovRpcLibClient* moveByManualAsync(float vx_max, float vy_max, float z_min, float duration,
-                                                 DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
+                                           DrivetrainType drivetrain = DrivetrainType::MaxDegreeOfFreedom, const YawMode& yaw_mode = YawMode(), const std::string& vehicle_name = "");
         RovRpcLibClient* rotateToYawAsync(float yaw, float timeout_sec = Utils::max<float>(), float margin = 5, const std::string& vehicle_name = "");
         RovRpcLibClient* rotateByYawRateAsync(float yaw_rate, float duration, const std::string& vehicle_name = "");
         RovRpcLibClient* hoverAsync(const std::string& vehicle_name = "");

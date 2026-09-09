@@ -16,13 +16,13 @@ namespace airlib
     {
     public:
         static std::unique_ptr<RovBodyParams> createConfig(const AirSimSettings::VehicleSetting* vehicle_setting,
-                                                            std::shared_ptr<const SensorFactory> sensor_factory)
+                                                           std::shared_ptr<const SensorFactory> sensor_factory)
         {
             std::unique_ptr<RovBodyParams> config;
 
             if (vehicle_setting->vehicle_type == AirSimSettings::kVehicleTypePX4Rov) {
                 config.reset(new Px4RovParams(*static_cast<const AirSimSettings::MavLinkVehicleSetting*>(vehicle_setting),
-                                                    sensor_factory));
+                                              sensor_factory));
             }
             else if (vehicle_setting->vehicle_type == "" || //default config
                      vehicle_setting->vehicle_type == AirSimSettings::kVehicleTypeRovSimple) {

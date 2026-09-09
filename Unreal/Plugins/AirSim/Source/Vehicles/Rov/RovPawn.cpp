@@ -76,15 +76,15 @@ void ARovPawn::BeginPlay()
             FBoxSphereBounds bounds = rov_mesh->GetBounds();
             FVector extent = bounds.BoxExtent;
 
-            UE_LOG(LogTemp, Warning, TEXT("ARovPawn ROV Mesh Bounds: Origin=(%f, %f, %f), Extent=(%f, %f, %f)"),
-                   bounds.Origin.X, bounds.Origin.Y, bounds.Origin.Z, extent.X, extent.Y, extent.Z);
+            UE_LOG(LogTemp, Warning, TEXT("ARovPawn ROV Mesh Bounds: Origin=(%f, %f, %f), Extent=(%f, %f, %f)"), bounds.Origin.X, bounds.Origin.Y, bounds.Origin.Z, extent.X, extent.Y, extent.Z);
 
             float max_dim = FMath::Max3(extent.X, extent.Y, extent.Z) * 2.0f;
             float target_size = 50.0f; // BlueROV2 is approx 50cm
             float scale = 1.0f;
             if (max_dim > 100.0f) {
                 scale = target_size / max_dim;
-            } else if (max_dim < 5.0f && max_dim > 0.001f) {
+            }
+            else if (max_dim < 5.0f && max_dim > 0.001f) {
                 scale = target_size / max_dim;
             }
 
@@ -171,7 +171,7 @@ const common_utils::UniqueValueMap<std::string, APIPCamera*> ARovPawn::getCamera
 }
 
 void ARovPawn::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation,
-                               FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+                         FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
     pawn_events_.getCollisionSignal().emit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 }
@@ -201,4 +201,3 @@ void ARovPawn::setRotorRenderedStates(const std::vector<RovPawnEvents::RotorTilt
         }
     }
 }
-

@@ -455,7 +455,7 @@ namespace airlib
     }
 
     bool RovApiBase::moveToGPS(float latitude, float longitude, float altitude, float velocity, float timeout_sec, DrivetrainType drivetrain,
-                                      const YawMode& yaw_mode, float lookahead, float adaptive_lookahead)
+                               const YawMode& yaw_mode, float lookahead, float adaptive_lookahead)
     {
         SingleTaskCall lock(this);
         GeoPoint target;
