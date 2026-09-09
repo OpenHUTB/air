@@ -5,7 +5,7 @@
   "ClockSpeed": 1,
   "PawnPaths": {
     "DefaultQuadrotor": {"PawnBP": "Class'/AirSim/Blueprints/BP_FlyingPawn.BP_FlyingPawn_C'"},
-    "DefaultRov": {"PawnBP": "Class'/AirSim/Blueprints/BP_RovPawn.BP_RovPawn_C'"},
+    "DefaultRov": {"PawnBP": "Class'/Script/AirSim.RovPawn'"},
     "DefaultComputerVision": {"PawnBP": "Class'/AirSim/Blueprints/BP_ComputerVisionPawn.BP_ComputerVisionPawn_C'"}
   },
   "Vehicles": {

@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.5.0)
 project(AirLib)
 
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake-modules") 
@@ -21,6 +21,8 @@ file(GLOB_RECURSE ${PROJECT_NAME}_sources
   ${AIRSIM_ROOT}/${PROJECT_NAME}/src/vehicles/car/api/*.cpp
   ${AIRSIM_ROOT}/${PROJECT_NAME}/src/vehicles/multirotor/*.cpp
   ${AIRSIM_ROOT}/${PROJECT_NAME}/src/vehicles/multirotor/api/*.cpp
+  ${AIRSIM_ROOT}/${PROJECT_NAME}/src/vehicles/rov/*.cpp
+  ${AIRSIM_ROOT}/${PROJECT_NAME}/src/vehicles/rov/api/*.cpp
 )
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_sources})

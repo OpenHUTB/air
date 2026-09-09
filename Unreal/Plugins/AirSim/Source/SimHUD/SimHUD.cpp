@@ -6,6 +6,7 @@
 #include "Vehicles/Multirotor/SimModeWorldMultiRotor.h"
 #include "Vehicles/Car/SimModeCar.h"
 #include "Vehicles/ComputerVision/SimModeComputerVision.h"
+#include "Vehicles/Rov/SimModeWorldRov.h"
 
 #include "common/AirSimSettings.hpp"
 #include <stdexcept>
@@ -279,6 +280,10 @@ void ASimHUD::createSimMode()
         simmode_ = this->GetWorld()->SpawnActor<ASimModeComputerVision>(FVector::ZeroVector,
                                                                         FRotator::ZeroRotator,
                                                                         simmode_spawn_params);
+    else if (simmode_name == AirSimSettings::kSimModeTypeRov)
+        simmode_ = this->GetWorld()->SpawnActor<ASimModeWorldRov>(FVector::ZeroVector,
+                                                                 FRotator::ZeroRotator,
+                                                                 simmode_spawn_params);
     else {
         UAirBlueprintLib::ShowMessage(EAppMsgType::Ok, std::string("SimMode is not valid: ") + simmode_name, "Error");
         UAirBlueprintLib::LogMessageString("SimMode is not valid: ", simmode_name, LogDebugLevel::Failure);
@@ -332,9 +337,10 @@ FString ASimHUD::getLaunchPath(const std::string& filename)
 bool ASimHUD::getSettingsText(std::string& settingsText)
 {
     return (getSettingsTextFromCommandLine(settingsText) ||
-            readSettingsTextFromFile(FString(msr::airlib::Settings::getExecutableFullPath("settings.json").c_str()), settingsText) ||
+            readSettingsTextFromFile(FPaths::Combine(FPaths::ProjectDir(), TEXT("settings.json")), settingsText) ||
+            readSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::getExecutableFullPath("settings.json").c_str()), settingsText) ||
             readSettingsTextFromFile(getLaunchPath("settings.json"), settingsText) ||
-            readSettingsTextFromFile(FString(msr::airlib::Settings::Settings::getUserDirectoryFullPath("settings.json").c_str()), settingsText));
+            readSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::Settings::getUserDirectoryFullPath("settings.json").c_str()), settingsText));
 }
 
 // Attempts to parse the settings file path or the settings text from the command line

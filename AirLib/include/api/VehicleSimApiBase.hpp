@@ -53,6 +53,14 @@ namespace airlib
 
         virtual Pose getPose() const = 0;
         virtual void setPose(const Pose& pose, bool ignore_collision) = 0;
+        virtual void setPoseCustom(const Pose& pose, const std::vector<float>& tilt_angles, bool ignore_collision, bool spin_props)
+        {
+            unused(pose);
+            unused(tilt_angles);
+            unused(ignore_collision);
+            unused(spin_props);
+            throw std::runtime_error("setPoseCustom is not supported on this vehicle");
+        }
         virtual const Kinematics::State* getGroundTruthKinematics() const = 0;
         virtual void setKinematics(const Kinematics::State& state, bool ignore_collision) = 0;
         virtual const msr::airlib::Environment* getGroundTruthEnvironment() const = 0;

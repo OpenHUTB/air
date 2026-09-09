@@ -37,6 +37,20 @@ public:
     void setRotorRenderedStates(const std::vector<RovPawnEvents::RotorTiltableInfo>& rotor_infos);
 
 private: //variables
+    UPROPERTY()
+    class UStaticMeshComponent* body_mesh_;
+
+    UPROPERTY()
+    class UChildActorComponent* camera_front_right_comp_;
+    UPROPERTY()
+    class UChildActorComponent* camera_front_left_comp_;
+    UPROPERTY()
+    class UChildActorComponent* camera_front_center_comp_;
+    UPROPERTY()
+    class UChildActorComponent* camera_back_center_comp_;
+    UPROPERTY()
+    class UChildActorComponent* camera_bottom_center_comp_;
+
     //Unreal components
     UPROPERTY()
     APIPCamera* camera_front_left_;

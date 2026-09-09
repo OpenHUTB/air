@@ -77,6 +77,34 @@ void ASimModeWorldRov::setupClockSpeed()
 
 //-------------------------------- overrides -----------------------------------------------//
 
+APawn* ASimModeWorldRov::createVehiclePawn(const AirSimSettings::VehicleSetting& vehicle_setting)
+{
+    try {
+        return ASimModeBase::createVehiclePawn(vehicle_setting);
+    }
+    catch (const std::exception& e) {
+        UAirBlueprintLib::LogMessageString("createVehiclePawn fallback to native ARovPawn: ", e.what(), LogDebugLevel::Informational);
+
+        const FTransform uu_origin = getGlobalNedTransform().getGlobalTransform();
+        FVector spawn_position = uu_origin.GetLocation();
+        if (!msr::airlib::VectorMath::hasNan(vehicle_setting.position))
+            spawn_position = getGlobalNedTransform().fromGlobalNed(vehicle_setting.position);
+
+        FRotator spawn_rotation = toFRotator(vehicle_setting.rotation, uu_origin.Rotator());
+
+        FActorSpawnParameters pawn_spawn_params;
+        pawn_spawn_params.Name = FName(vehicle_setting.vehicle_name.c_str());
+        pawn_spawn_params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+        APawn* spawned_pawn = this->GetWorld()->SpawnActor<ARovPawn>(spawn_position, spawn_rotation, pawn_spawn_params);
+        if (spawned_pawn) {
+            spawned_actors_.Add(spawned_pawn);
+            return spawned_pawn;
+        }
+        throw;
+    }
+}
+
 std::unique_ptr<msr::airlib::ApiServerBase> ASimModeWorldRov::createApiServer() const
 {
 #ifdef AIRLIB_NO_RPC

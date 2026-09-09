@@ -742,6 +742,14 @@ UClass* UAirBlueprintLib::LoadClass(const std::string& name)
     FString str(name.c_str());
     UClass* cls = StaticLoadClass(UObject::StaticClass(), nullptr, *str);
     if (cls == nullptr) {
+        cls = FindObject<UClass>(ANY_PACKAGE, *str);
+        if (!cls) {
+            FString CleanName = FPackageName::ObjectPathToObjectName(str);
+            CleanName.RemoveFromEnd(TEXT("_C"));
+            cls = FindObject<UClass>(ANY_PACKAGE, *CleanName);
+        }
+    }
+    if (cls == nullptr) {
         std::string msg = "Failed to load asset class - " + name;
         FString fmsg(msg.c_str());
         LogMessage(TEXT("Load: "), fmsg, LogDebugLevel::Failure);

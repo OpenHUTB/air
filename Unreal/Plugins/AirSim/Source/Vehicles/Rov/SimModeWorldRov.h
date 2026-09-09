@@ -18,6 +18,7 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected: //overrides
+    virtual APawn* createVehiclePawn(const AirSimSettings::VehicleSetting& vehicle_setting) override;
     virtual void setupClockSpeed() override;
     virtual std::unique_ptr<msr::airlib::ApiServerBase> createApiServer() const override;
     virtual void getExistingVehiclePawns(TArray<AActor*>& pawns) const override;

@@ -112,10 +112,8 @@ namespace airlib
         }
 
         //this gets called in getDragWrench function in physics engine
-        virtual void setAirspeedBody(const Vector3r airspeed_body_vector) override
+        virtual void setAirspeedBody(const Vector3r airspeed_body_vector)
         {
-            PhysicsBody::setAirspeedBody(airspeed_body_vector);
-
             aero_vertex_.setAirspeedVertex(airspeed_body_vector);
 
             for (uint rotor_index = 0; rotor_index < rotors_.size(); ++rotor_index) {
@@ -184,8 +182,7 @@ namespace airlib
     private: //methods
         void initialize(Kinematics* kinematics, Environment* environment)
         {
-            PhysicsBody::initialize(params_->getParams().added_mass_linear,params_->getParams().added_mass_angular,params_->getParams().damping_linear,params_->getParams().damping_angular,params_->getParams().damping_linear_q,params_->getParams().damping_angular_q,params_->getParams().off_z, params_->getParams().mass, params_->getParams().inertia, kinematics, environment);
-            //PhysicsBody::initialize( params_->getParams().mass, params_->getParams().inertia, kinematics, environment);
+            PhysicsBody::initialize(params_->getParams().mass, params_->getParams().inertia, kinematics, environment);
 
             createRotors(*params_, rotors_, environment);
             createAeroVertex(*params_, aero_vertex_, environment, kinematics);

@@ -5,7 +5,7 @@
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 #include "Modules/ModuleInterface.h"
-#if WITH_EDITOR
+#if WITH_EDITOR && WITH_CARLA
 #include <compiler/disable-ue4-macros.h>
 #include <carla/Exception.h>
 #include <compiler/enable-ue4-macros.h>
@@ -31,7 +31,7 @@ void FAirSim::ShutdownModule()
     //plugin shutdown
 }
 
-#if WITH_EDITOR
+#if WITH_EDITOR && WITH_CARLA
 namespace carla
 {
 

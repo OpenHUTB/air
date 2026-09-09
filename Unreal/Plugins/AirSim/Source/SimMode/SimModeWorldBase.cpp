@@ -144,6 +144,11 @@ void ASimModeWorldBase::updateDebugReport(msr::airlib::StateReporterWrapper& deb
 
 void ASimModeWorldBase::Tick(float DeltaSeconds)
 {
+    if (!physics_world_) {
+        Super::Tick(DeltaSeconds);
+        return;
+    }
+
     { //keep this lock as short as possible
         physics_world_->lock();
 

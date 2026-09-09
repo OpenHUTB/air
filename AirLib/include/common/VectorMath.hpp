@@ -170,6 +170,12 @@ namespace airlib
         };
 
     public:
+        template <typename T>
+        static int sgn(T val)
+        {
+            return (val > T(0)) - (val < T(0));
+        }
+
         static float magnitude(const Vector2f& v)
         {
             return v.norm();
