@@ -60,7 +60,7 @@ nav:
     - "Settings": 'settings.md'
     - "Camera Views": 'camera_views.md'
     - "Car Mode": 'using_car.md'
-    - "ROV Mode (水下机器人)": 'rov_setup_zh.md'
+    - "ROV Mode": 'rov_setup.md'
     - "Remote Control": 'remote_control.md'
     - "XBox Controller": 'xbox_controller.md'
     - "Steering Wheel": 'steering_wheel_installation.md'
