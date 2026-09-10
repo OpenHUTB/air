@@ -144,6 +144,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="using_car/">Car Mode</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="rov_setup/">ROV Mode</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="remote_control/">Remote Control</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="xbox_controller/">XBox Controller</a>
@@ -339,7 +341,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="welcome-to-airsim">Welcome to AirSim<a class="headerlink" href="#welcome-to-airsim" title="Permanent link">#</a></h1>
-<p>AirSim is a simulator for drones, cars and more, built on <a href="https://www.unrealengine.com/">Unreal Engine</a> (we now also have an experimental <a href="https://unity3d.com/">Unity</a> release). It is open-source, cross platform, and supports software-in-the-loop simulation with popular flight controllers such as PX4 &amp; ArduPilot and hardware-in-loop with PX4 for physically and visually realistic simulations. It is developed as an Unreal plugin that can simply be dropped into any Unreal environment. Similarly, we have an experimental release for a Unity plugin.</p>
+<p>AirSim is a simulator for drones, cars, underwater vehicles (ROVs) and more, built on <a href="https://www.unrealengine.com/">Unreal Engine</a> (we now also have an experimental <a href="https://unity3d.com/">Unity</a> release). It is open-source, cross platform, and supports software-in-the-loop simulation with popular flight controllers such as PX4 &amp; ArduPilot and hardware-in-loop with PX4 for physically and visually realistic simulations. It is developed as an Unreal plugin that can simply be dropped into any Unreal environment. Similarly, we have an experimental release for a Unity plugin.</p>
 <p>AirSim was conceived and created by <a href="https://shital.com">Shital Shah</a> with PX4 and hardware-in-loop code contributed by <a href="https://lovettsoftware.com/">Chris Lovett</a>.</p>
 <p>Our goal is to develop AirSim as a platform for AI research to experiment with deep learning, computer vision and reinforcement learning algorithms for autonomous vehicles. For this purpose, AirSim also exposes APIs to retrieve data and control vehicles in a platform independent way.</p>
 <p><strong>Check out the quick 1.5 minute demo</strong></p>
@@ -347,6 +349,8 @@
 <p><a href="https://youtu.be/-WfTr1-OBGQ"><img alt="AirSim Drone Demo Video" src="images/demo_video.png" /></a></p>
 <p>Cars in AirSim</p>
 <p><a href="https://youtu.be/gnz1X3UNM5Y"><img alt="AirSim Car Demo Video" src="images/car_demo_video.png" /></a></p>
+<p>ROVs (Underwater Vehicles) in AirSim</p>
+<p>AirSim supports underwater and marine robotics (ROVs / AUVs) with 6-DOF hydrodynamics, fluid buoyancy and drag modeling, and multi-camera perception. See the <a href="rov_setup/">ROV Setup and Verification Guide</a> for full configuration, physical parameters, and Python API control examples.</p>
 <h2 id="how-to-get-it">How to Get It<a class="headerlink" href="#how-to-get-it" title="Permanent link">#</a></h2>
 <h3 id="windows">Windows<a class="headerlink" href="#windows" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml"><img alt="Build Status" src="https://github.com/microsoft/AirSim/actions/workflows/test_windows.yml/badge.svg" /></a></p>
@@ -378,14 +382,14 @@
 <h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">#</a></h3>
 <p>View our detailed <a href="https://microsoft.github.io/AirSim/">English documentation</a>/<a href="https://openhutb.github.io/air_doc">中文文档</a> on all aspects of AirSim.</p>
 <h3 id="manual-drive">Manual drive<a class="headerlink" href="#manual-drive" title="Permanent link">#</a></h3>
-<p>If you have remote control (RC) as shown below, you can manually control the drone in the simulator. For cars, you can use arrow keys to drive manually.</p>
+<p>If you have remote control (RC) as shown below, you can manually control the drone in the simulator. For cars, you can use arrow keys to drive manually. For underwater vehicles, see <a href="rov_setup/">ROV Mode</a>.</p>
 <p><a href="https://microsoft.github.io/AirSim/remote_control">More details</a></p>
 <p><img alt="record screenshot" src="images/AirSimDroneManual.gif" /></p>
 <p><img alt="record screenshot" src="images/AirSimCarManual.gif" /></p>
 <h3 id="programmatic-control">Programmatic control<a class="headerlink" href="#programmatic-control" title="Permanent link">#</a></h3>
 <p>AirSim exposes APIs so you can interact with the vehicle in the simulation programmatically. You can use these APIs to retrieve images, get state, control the vehicle and so on. The APIs are exposed through the RPC, and are accessible via a variety of languages, including C++, Python, C# and Java.</p>
 <p>These APIs are also available as part of a separate, independent cross-platform library, so you can deploy them on a companion computer on your vehicle. This way you can write and test your code in the simulator, and later execute it on the real vehicles. Transfer learning and related research is one of our focus areas.</p>
-<p>Note that you can use <a href="https://microsoft.github.io/AirSim/settings#simmode">SimMode setting</a> to specify the default vehicle or the new <a href="https://microsoft.github.io/AirSim/image_apis#computer-vision-mode-1">ComputerVision mode</a> so you don't get prompted each time you start AirSim.</p>
+<p>Note that you can use <a href="https://microsoft.github.io/AirSim/settings#simmode">SimMode setting</a> to specify the default vehicle (e.g. <code>Multirotor</code>, <code>Car</code>, or <code>Rov</code>) or the new <a href="https://microsoft.github.io/AirSim/image_apis#computer-vision-mode-1">ComputerVision mode</a> so you don't get prompted each time you start AirSim. For underwater vehicle details, refer to the <a href="rov_setup/">ROV Setup and Verification Guide</a>.</p>
 <p><a href="https://microsoft.github.io/AirSim/apis">More details</a></p>
 <h3 id="gathering-training-data">Gathering training data<a class="headerlink" href="#gathering-training-data" title="Permanent link">#</a></h3>
 <p>There are two ways you can generate training data from AirSim for deep learning. The easiest way is to simply press the record button in the lower right corner. This will start writing pose and images for each frame. The data logging code is pretty simple and you can modify it to your heart's content.</p>

@@ -652,6 +652,28 @@
     <span class="n">vertices</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span></div>
+
+<div class="viewcode-block" id="RotorTiltableParameters"><a class="viewcode-back" href="../../index.html#airsim.types.RotorTiltableParameters">[docs]</a><span class="k">class</span> <span class="nc">RotorTiltableParameters</span><span class="p">(</span><span class="n">MsgpackMixin</span><span class="p">):</span>
+    <span class="n">thrust</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">torque_scaler</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">speed</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+<div class="viewcode-block" id="RotorTiltableStates"><a class="viewcode-back" href="../../index.html#airsim.types.RotorTiltableStates">[docs]</a><span class="k">class</span> <span class="nc">RotorTiltableStates</span><span class="p">(</span><span class="n">MsgpackMixin</span><span class="p">):</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">rotors</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="RovState"><a class="viewcode-back" href="../../index.html#airsim.types.RovState">[docs]</a><span class="k">class</span> <span class="nc">RovState</span><span class="p">(</span><span class="n">MsgpackMixin</span><span class="p">):</span>
+    <span class="n">collision</span> <span class="o">=</span> <span class="n">CollisionInfo</span><span class="p">()</span>
+    <span class="n">kinematics_estimated</span> <span class="o">=</span> <span class="n">KinematicsState</span><span class="p">()</span>
+    <span class="n">kinematics_true</span> <span class="o">=</span> <span class="n">KinematicsState</span><span class="p">()</span>
+    <span class="n">gps_location</span> <span class="o">=</span> <span class="n">GeoPoint</span><span class="p">()</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">landed_state</span> <span class="o">=</span> <span class="n">LandedState</span><span class="o">.</span><span class="n">Landed</span>
+    <span class="n">rc_data</span> <span class="o">=</span> <span class="n">RCData</span><span class="p">()</span>
+    <span class="n">ready</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">ready_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">can_arm</span> <span class="o">=</span> <span class="kc">False</span></div>
 </pre></div>
 
            </div>
