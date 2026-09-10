@@ -1,6 +1,6 @@
 # Welcome to AirSim
 
-AirSim is a simulator for drones, cars and more, built on [Unreal Engine](https://www.unrealengine.com/) (we now also have an experimental [Unity](https://unity3d.com/) release). It is open-source, cross platform, and supports software-in-the-loop simulation with popular flight controllers such as PX4 & ArduPilot and hardware-in-loop with PX4 for physically and visually realistic simulations. It is developed as an Unreal plugin that can simply be dropped into any Unreal environment. Similarly, we have an experimental release for a Unity plugin.
+AirSim is a simulator for drones, cars, underwater vehicles (ROVs) and more, built on [Unreal Engine](https://www.unrealengine.com/) (we now also have an experimental [Unity](https://unity3d.com/) release). It is open-source, cross platform, and supports software-in-the-loop simulation with popular flight controllers such as PX4 & ArduPilot and hardware-in-loop with PX4 for physically and visually realistic simulations. It is developed as an Unreal plugin that can simply be dropped into any Unreal environment. Similarly, we have an experimental release for a Unity plugin.
 
 AirSim was conceived and created by [Shital Shah](https://shital.com) with PX4 and hardware-in-loop code contributed by [Chris Lovett](https://lovettsoftware.com/).
 
@@ -15,6 +15,10 @@ Drones in AirSim
 Cars in AirSim
 
 [![AirSim Car Demo Video](images/car_demo_video.png)](https://youtu.be/gnz1X3UNM5Y)
+
+ROVs (Underwater Vehicles) in AirSim
+
+AirSim supports underwater and marine robotics (ROVs / AUVs) with 6-DOF hydrodynamics, fluid buoyancy and drag modeling, and multi-camera perception. See the [ROV Setup and Verification Guide](rov_setup.md) for full configuration, physical parameters, and Python API control examples.
 
 
 ## How to Get It
@@ -51,7 +55,7 @@ View our detailed [English documentation](https://microsoft.github.io/AirSim/)/[
 
 ### Manual drive
 
-If you have remote control (RC) as shown below, you can manually control the drone in the simulator. For cars, you can use arrow keys to drive manually.
+If you have remote control (RC) as shown below, you can manually control the drone in the simulator. For cars, you can use arrow keys to drive manually. For underwater vehicles, see [ROV Mode](rov_setup.md).
 
 [More details](https://microsoft.github.io/AirSim/remote_control)
 
@@ -66,7 +70,7 @@ AirSim exposes APIs so you can interact with the vehicle in the simulation progr
 
 These APIs are also available as part of a separate, independent cross-platform library, so you can deploy them on a companion computer on your vehicle. This way you can write and test your code in the simulator, and later execute it on the real vehicles. Transfer learning and related research is one of our focus areas.
 
-Note that you can use [SimMode setting](https://microsoft.github.io/AirSim/settings#simmode) to specify the default vehicle or the new [ComputerVision mode](https://microsoft.github.io/AirSim/image_apis#computer-vision-mode-1) so you don't get prompted each time you start AirSim.
+Note that you can use [SimMode setting](https://microsoft.github.io/AirSim/settings#simmode) to specify the default vehicle (e.g. `Multirotor`, `Car`, or `Rov`) or the new [ComputerVision mode](https://microsoft.github.io/AirSim/image_apis#computer-vision-mode-1) so you don't get prompted each time you start AirSim. For underwater vehicle details, refer to the [ROV Setup and Verification Guide](rov_setup.md).
 
 [More details](https://microsoft.github.io/AirSim/apis)
 

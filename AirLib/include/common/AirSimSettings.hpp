@@ -35,6 +35,8 @@ namespace airlib
         static constexpr char const* kVehicleTypePhysXCar = "physxcar";
         static constexpr char const* kVehicleTypeArduRover = "ardurover";
         static constexpr char const* kVehicleTypeComputerVision = "computervision";
+        static constexpr char const* kVehicleTypeRovSimple = "rovsimple";
+        static constexpr char const* kVehicleTypePX4Rov = "px4rov";
 
         static constexpr char const* kVehicleInertialFrame = "VehicleInertialFrame";
         static constexpr char const* kSensorLocalFrame = "SensorLocalFrame";
@@ -42,6 +44,7 @@ namespace airlib
         static constexpr char const* kSimModeTypeMultirotor = "Multirotor";
         static constexpr char const* kSimModeTypeCar = "Car";
         static constexpr char const* kSimModeTypeComputerVision = "ComputerVision";
+        static constexpr char const* kSimModeTypeRov = "Rov";
 
         struct SubwindowSetting
         {
@@ -598,7 +601,7 @@ namespace airlib
 
             physics_engine_name = settings_json.getString("PhysicsEngineName", "");
             if (physics_engine_name == "") {
-                if (simmode_name == kSimModeTypeMultirotor)
+                if (simmode_name == kSimModeTypeMultirotor || simmode_name == kSimModeTypeRov)
                     physics_engine_name = "FastPhysicsEngine";
                 else
                     physics_engine_name = "PhysX"; //this value is only informational for now
@@ -811,7 +814,7 @@ namespace airlib
             auto vehicle_type = Utils::toLower(settings_json.getString("VehicleType", ""));
 
             std::unique_ptr<VehicleSetting> vehicle_setting;
-            if (vehicle_type == kVehicleTypePX4 || vehicle_type == kVehicleTypeArduCopterSolo || vehicle_type == kVehicleTypeArduCopter || vehicle_type == kVehicleTypeArduRover)
+            if (vehicle_type == kVehicleTypePX4 || vehicle_type == kVehicleTypeArduCopterSolo || vehicle_type == kVehicleTypeArduCopter || vehicle_type == kVehicleTypeArduRover || vehicle_type == kVehicleTypePX4Rov)
                 vehicle_setting = createMavLinkVehicleSetting(settings_json);
             //for everything else we don't need derived class yet
             else {
@@ -882,6 +885,12 @@ namespace airlib
                 auto cv_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting("ComputerVision", kVehicleTypeComputerVision));
                 cv_setting->sensors = sensor_defaults;
                 vehicles[cv_setting->vehicle_name] = std::move(cv_setting);
+            }
+            else if (simmode_name == kSimModeTypeRov) {
+                // create default rov vehicle
+                auto rov_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting("RovSimple", kVehicleTypeRovSimple));
+                rov_setting->sensors = sensor_defaults;
+                vehicles[rov_setting->vehicle_name] = std::move(rov_setting);
             }
             else {
                 throw std::invalid_argument(Utils::stringf(
@@ -1251,16 +1260,16 @@ namespace airlib
                 //default value
                 clock_type = "ScalableClock";
 
-                //override if multirotor simmode with simple_flight
-                if (simmode_name == kSimModeTypeMultirotor) {
+                //override if multirotor or rov simmode with simple_flight or rov_simple
+                if (simmode_name == kSimModeTypeMultirotor || simmode_name == kSimModeTypeRov) {
                     //TODO: this won't work if simple_flight and PX4 is combined together!
 
-                    //for multirotors we select steppable fixed interval clock unless we have
+                    //for multirotors and rovs we select steppable fixed interval clock unless we have
                     //PX4 enabled vehicle
                     clock_type = "SteppableClock";
                     for (auto const& vehicle : vehicles) {
                         if (vehicle.second->auto_create &&
-                            vehicle.second->vehicle_type == kVehicleTypePX4) {
+                            (vehicle.second->vehicle_type == kVehicleTypePX4 || vehicle.second->vehicle_type == kVehicleTypePX4Rov)) {
                             clock_type = "ScalableClock";
                             break;
                         }
@@ -1359,7 +1368,7 @@ namespace airlib
         static void createDefaultSensorSettings(const std::string& simmode_name,
                                                 std::map<std::string, std::shared_ptr<SensorSetting>>& sensors)
         {
-            if (simmode_name == kSimModeTypeMultirotor) {
+            if (simmode_name == kSimModeTypeMultirotor || simmode_name == kSimModeTypeRov) {
                 sensors["imu"] = createSensorSetting(SensorBase::SensorType::Imu, "imu", true);
                 sensors["magnetometer"] = createSensorSetting(SensorBase::SensorType::Magnetometer, "magnetometer", true);
                 sensors["gps"] = createSensorSetting(SensorBase::SensorType::Gps, "gps", true);

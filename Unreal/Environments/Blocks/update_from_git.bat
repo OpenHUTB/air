@@ -17,6 +17,12 @@ echo Using AirSimPath = %AirSimPath%
 
 robocopy /MIR "%AirSimPath%\Unreal\Plugins\AirSim" Plugins\AirSim /XD temp *. /njh /njs /ndl /np
 robocopy /MIR "%AirSimPath%\AirLib" Plugins\AirSim\Source\AirLib /XD temp *. /njh /njs /ndl /np
+
+if not exist Plugins\Carla (
+    if exist Plugins\AirSim\Source\SimWorldGameMode.h ren Plugins\AirSim\Source\SimWorldGameMode.h SimWorldGameMode.h.disabled
+    if exist Plugins\AirSim\Source\SimWorldGameMode.cpp ren Plugins\AirSim\Source\SimWorldGameMode.cpp SimWorldGameMode.cpp.disabled
+)
+
 robocopy  /njh /njs /ndl /np "%AirSimPath%\Unreal\Environments\Blocks" "." *.bat 
 robocopy  /njh /njs /ndl /np "%AirSimPath%\Unreal\Environments\Blocks" "." *.sh  
 rem robocopy /njh /njs /ndl /np "%AirSimPath%" "." *.gitignore

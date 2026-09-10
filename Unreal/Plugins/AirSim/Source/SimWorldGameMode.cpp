@@ -12,6 +12,7 @@
 #include "Vehicles/Multirotor/MultirotorPawnSimApi.h"
 #include "Vehicles/Car/SimModeCar.h"
 #include "Vehicles/ComputerVision/SimModeComputerVision.h"
+#include "Vehicles/Rov/SimModeWorldRov.h"
 
 #include "common/AirSimSettings.hpp"
 #include "common/Common.hpp"
@@ -962,6 +963,9 @@ void ASimWorldGameMode::CreateSimMode()
     else if (simmode_name == AirSimSettings::kSimModeTypeComputerVision)
         SimMode_ = GetWorld()->SpawnActor<ASimModeComputerVision>(
             FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
+    else if (simmode_name == AirSimSettings::kSimModeTypeRov)
+        SimMode_ = GetWorld()->SpawnActor<ASimModeWorldRov>(
+            FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
     else {
         UAirBlueprintLib::ShowMessage(EAppMsgType::Ok,
                                       std::string("SimMode is not valid: ") + simmode_name,
@@ -1183,9 +1187,10 @@ FString ASimWorldGameMode::GetLaunchPath(const std::string& filename)
 bool ASimWorldGameMode::GetSettingsText(std::string& settingsText)
 {
     return (GetSettingsTextFromCommandLine(settingsText) ||
-            ReadSettingsTextFromFile(FString(msr::airlib::Settings::getExecutableFullPath("settings.json").c_str()), settingsText) ||
+            ReadSettingsTextFromFile(FPaths::Combine(FPaths::ProjectDir(), TEXT("settings.json")), settingsText) ||
+            ReadSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::getExecutableFullPath("settings.json").c_str()), settingsText) ||
             ReadSettingsTextFromFile(GetLaunchPath("settings.json"), settingsText) ||
-            ReadSettingsTextFromFile(FString(msr::airlib::Settings::Settings::getUserDirectoryFullPath("settings.json").c_str()), settingsText));
+            ReadSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::Settings::getUserDirectoryFullPath("settings.json").c_str()), settingsText));
 }
 
 bool ASimWorldGameMode::GetSettingsTextFromCommandLine(std::string& settingsText)

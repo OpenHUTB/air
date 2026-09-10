@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AirSim.props))\AirSim.props" />
   <PropertyGroup>
@@ -178,6 +178,28 @@
     <ClInclude Include="include\vehicles\multirotor\MultiRotorParamsFactory.hpp" />
     <ClInclude Include="include\vehicles\multirotor\RotorActuator.hpp" />
     <ClInclude Include="include\vehicles\multirotor\RotorParams.hpp" />
+    <ClInclude Include="include\vehicles\rov\AeroParams.hpp" />
+    <ClInclude Include="include\vehicles\rov\AeroVertex.hpp" />
+    <ClInclude Include="include\vehicles\rov\RotorActuator.hpp" />
+    <ClInclude Include="include\vehicles\rov\RotorTiltable.hpp" />
+    <ClInclude Include="include\vehicles\rov\RotorTiltableParams.hpp" />
+    <ClInclude Include="include\vehicles\rov\RovBodyParams.hpp" />
+    <ClInclude Include="include\vehicles\rov\RovParamsFactory.hpp" />
+    <ClInclude Include="include\vehicles\rov\RovPhysicsBody.hpp" />
+    <ClInclude Include="include\vehicles\rov\api\RovApiBase.hpp" />
+    <ClInclude Include="include\vehicles\rov\api\RovCommon.hpp" />
+    <ClInclude Include="include\vehicles\rov\api\RovRpcLibAdaptors.hpp" />
+    <ClInclude Include="include\vehicles\rov\api\RovRpcLibClient.hpp" />
+    <ClInclude Include="include\vehicles\rov\api\RovRpcLibServer.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\mavlink\MavLinkOutputMappings.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\mavlink\MavLinkRovApi.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\mavlink\Px4RovParams.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\rov_simple\RovSimpleApi.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\rov_simple\RovSimpleBoard.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\rov_simple\RovSimpleCommLink.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\rov_simple\RovSimpleCommon.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\rov_simple\RovSimpleEstimator.hpp" />
+    <ClInclude Include="include\vehicles\rov\firmwares\rov_simple\RovSimpleParams.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\api\RpcLibClientBase.cpp" />
@@ -190,6 +212,9 @@
     <ClCompile Include="src\vehicles\car\api\CarRpcLibServer.cpp" />
     <ClCompile Include="src\vehicles\multirotor\api\MultirotorRpcLibClient.cpp" />
     <ClCompile Include="src\vehicles\multirotor\api\MultirotorRpcLibServer.cpp" />
+    <ClCompile Include="src\vehicles\rov\api\RovApiBase.cpp" />
+    <ClCompile Include="src\vehicles\rov\api\RovRpcLibClient.cpp" />
+    <ClCompile Include="src\vehicles\rov\api\RovRpcLibServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MavLinkCom\MavLinkCom.vcxproj">

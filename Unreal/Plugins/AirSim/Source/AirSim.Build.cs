@@ -79,7 +79,22 @@ public class AirSim : ModuleRules
         bEnableExceptions = true;
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "RHI", "AssetRegistry", "PhysicsCore", "PhysXVehicles", "PhysXVehicleLib", "PhysX", "APEX", "Landscape", "CinematicCamera" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "UMG", "Slate", "SlateCore", "Carla", "Foliage" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "UMG", "Slate", "SlateCore", "Foliage" });
+
+        string ProjectDir = Target.ProjectFile != null ? Path.GetDirectoryName(Target.ProjectFile.FullName) : "";
+        string CarlaPluginInProject = Path.Combine(ProjectDir, "Plugins", "Carla");
+        string CarlaPluginSibling = Path.Combine(AirSimPluginPath, "..", "Carla");
+        bool bHaveCarla = Directory.Exists(CarlaPluginInProject) || Directory.Exists(CarlaPluginSibling);
+
+        if (bHaveCarla)
+        {
+            PrivateDependencyModuleNames.Add("Carla");
+            PublicDefinitions.Add("WITH_CARLA=1");
+        }
+        else
+        {
+            PublicDefinitions.Add("WITH_CARLA=0");
+        }
 
         //suppress VC++ proprietary warnings
         PublicDefinitions.Add("_SCL_SECURE_NO_WARNINGS=1");
