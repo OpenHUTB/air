@@ -21,8 +21,10 @@ namespace airlib
     {
     public:
         RovSimpleBoard(const Rov_simple::Params* params)
-            : params_(params)
+            : params_(params), is_connected_(false), kinematics_(nullptr)
         {
+            actuator_output_.assign(params_->actuator.actuator_count, 0.0f);
+            input_channels_.assign(params_->rc.channel_count, 0.0f);
         }
 
         //interface for simulator --------------------------------------------------------------------------------
@@ -35,6 +37,8 @@ namespace airlib
         //called to get o/p motor signal as float value
         real_T getActuatorControlSignal(uint index) const
         {
+            if (index >= actuator_output_.size())
+                return 0.0f;
             //convert PWM to scaled 0 to 1 control signal
             return static_cast<float>(actuator_output_[index]);
         }
@@ -42,6 +46,8 @@ namespace airlib
         //set current RC stick status
         void setInputChannel(uint index, real_T val)
         {
+            if (index >= input_channels_.size())
+                input_channels_.resize(index + 1, 0.0f);
             input_channels_[index] = static_cast<float>(val);
         }
 
@@ -65,21 +71,20 @@ namespace airlib
 
         virtual float readChannel(uint16_t index) const override
         {
+            if (index >= input_channels_.size())
+                return 0.0f;
             return input_channels_[index];
         }
 
         virtual float getAvgMotorOutput() const override
         {
-            //actuation order is {flap1, flap2, flap3, rotor1thr, rotor1ang, rotor2thr, rotor2ang, ...}
-            int num_motors = 0;
-            float sum_throttle = 0;
-            uint index = 0;
-            while (index < actuator_output_.size()) {
-                sum_throttle += getActuatorControlSignal(index);
-                num_motors++;
-                index += 1;
+            if (actuator_output_.empty())
+                return 0.0f;
+            float sum_throttle = 0.0f;
+            for (float val : actuator_output_) {
+                sum_throttle += val;
             }
-            return sum_throttle / num_motors;
+            return sum_throttle / static_cast<float>(actuator_output_.size());
         }
 
         virtual bool isRcConnected() const override
@@ -89,6 +94,9 @@ namespace airlib
 
         virtual void writeOutput(uint16_t index, float value) override
         {
+            if (index >= actuator_output_.size()) {
+                actuator_output_.resize(index + 1, 0.0f);
+            }
             actuator_output_[index] = value;
         }
 

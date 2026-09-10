@@ -18,7 +18,7 @@ public:
     //simulation board should respect possible values
     struct Actuator
     {
-        uint16_t actuator_count = 4; //set this correctly in api
+        uint16_t actuator_count = 8; // BlueROV2 Heavy 8 thrusters
         float min_actuator_output = 0;
         float max_actuator_output = 1;
         //if min_armed_output too low then noise in pitch/roll can destabilize quad copter when throttle is zero

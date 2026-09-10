@@ -18,6 +18,10 @@ public:
 
     void getMotorOutput(const Axis4r& controls, std::vector<float>& motor_outputs) const
     {
+        if (motor_outputs.size() < static_cast<size_t>(kMotorCount)) {
+            motor_outputs.resize(kMotorCount, 0.0f);
+        }
+
         if (controls.throttle() < params_->actuator.min_angling_throttle) {
             motor_outputs.assign(params_->actuator.actuator_count, controls.throttle());
             return;
@@ -25,7 +29,7 @@ public:
 
         for (int motor_index = 0; motor_index < kMotorCount; ++motor_index) {
             motor_outputs[motor_index] =
-                controls.throttle() * mixerQuadX[motor_index].throttle + controls.pitch() * mixerQuadX[motor_index].pitch + controls.roll() * mixerQuadX[motor_index].roll + controls.yaw() * mixerQuadX[motor_index].yaw;
+                controls.throttle() * mixerRov8[motor_index].throttle + controls.pitch() * mixerRov8[motor_index].pitch + controls.roll() * mixerRov8[motor_index].roll + controls.yaw() * mixerRov8[motor_index].yaw;
         }
 
         float min_motor = *std::min_element(motor_outputs.begin(), motor_outputs.begin() + kMotorCount);
@@ -48,7 +52,7 @@ public:
     }
 
 private:
-    const int kMotorCount = 4;
+    static const int kMotorCount = 8;
 
     const Params* params_;
 
@@ -61,13 +65,20 @@ private:
         float yaw;
     } motorMixer_t;
 
-    //only thing that this matrix does is change the sign
-    const motorMixer_t mixerQuadX[4] = {
-        //QuadX config
-        { 1.0f, -1.0f, 1.0f, 1.0f }, // FRONT_R
-        { 1.0f, 1.0f, -1.0f, 1.0f }, // REAR_L
-        { 1.0f, 1.0f, 1.0f, -1.0f }, // FRONT_L
-        { 1.0f, -1.0f, -1.0f, -1.0f }, // REAR_R
+    // BlueROV2 Heavy 8-thruster configuration
+    // r1-r4: Vertical thrusters (heave/throttle, roll, pitch)
+    // r5-r8: Horizontal vectored thrusters (surge, sway, yaw)
+    const motorMixer_t mixerRov8[8] = {
+        // Vertical thrusters (r1-r4)
+        { 1.0f, -1.0f, 1.0f, 0.0f }, // r1: FRONT_R VERTICAL
+        { 1.0f, 1.0f, 1.0f, 0.0f }, // r2: FRONT_L VERTICAL
+        { 1.0f, 1.0f, -1.0f, 0.0f }, // r3: REAR_L VERTICAL
+        { 1.0f, -1.0f, -1.0f, 0.0f }, // r4: REAR_R VERTICAL
+        // Horizontal vectored thrusters (r5-r8)
+        { 0.0f, 0.0f, 0.0f, 1.0f }, // r5: FRONT_R HORIZONTAL
+        { 0.0f, 0.0f, 0.0f, -1.0f }, // r6: FRONT_L HORIZONTAL
+        { 0.0f, 0.0f, 0.0f, 1.0f }, // r7: REAR_L HORIZONTAL
+        { 0.0f, 0.0f, 0.0f, -1.0f }, // r8: REAR_R HORIZONTAL
     };
 };
 

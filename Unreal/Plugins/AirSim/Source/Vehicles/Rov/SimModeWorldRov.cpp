@@ -110,6 +110,7 @@ std::unique_ptr<msr::airlib::ApiServerBase> ASimModeWorldRov::createApiServer() 
 #ifdef AIRLIB_NO_RPC
     return ASimModeBase::createApiServer();
 #else
+    UE_LOG(LogTemp, Log, TEXT("SimModeWorldRov: Api server started on port %d"), getSettings().api_port);
     return std::unique_ptr<msr::airlib::ApiServerBase>(new msr::airlib::RovRpcLibServer(
         getApiProvider(), getSettings().api_server_address, getSettings().api_port));
 #endif

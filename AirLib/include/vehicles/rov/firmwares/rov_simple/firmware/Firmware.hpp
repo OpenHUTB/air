@@ -23,23 +23,7 @@ public:
     Firmware(Params* params, IBoard* board, ICommLink* comm_link, IStateEstimator* state_estimator)
         : params_(params), board_(board), comm_link_(comm_link), state_estimator_(state_estimator), offboard_api_(params, board, board, state_estimator, comm_link), mixer_(params), overridden_outputs_(false)
     {
-        // switch (params->controller_type) {
-        // case Params::ControllerType::Cascade:
-        //     controller_ = std::unique_ptr<CascadeController>(new CascadeController(params, board, comm_link));
-        //     break;
-        // case Params::ControllerType::Adaptive:
-        //     controller_ = std::unique_ptr<AdaptiveController>(new AdaptiveController());
-        //     break;
-        // case Params::ControllerType::DoNothing:
-        //this controller is used if you are using commandMotorPWMs. It literally does nothing,
-        //just implements IController. commandMotorPWMs overrides the actuator outputs.
-        // controller_ = std::unique_ptr<DoNothingController>(new DoNothingController());
-        // break;
-        // default:
-        // throw std::invalid_argument("Cannot recognize controller specified by params->controller_type");
-        // }
-
-        // controller_->initialize(&offboard_api_, state_estimator_);
+        actuator_outputs_.assign(params_->actuator.actuator_count, 0.0f);
     }
 
     virtual void reset() override
@@ -51,7 +35,7 @@ public:
         // controller_->reset();
         offboard_api_.reset();
 
-        actuator_outputs_.assign(params_->actuator.actuator_count, 0);
+        actuator_outputs_.assign(params_->actuator.actuator_count, 0.0f);
     }
 
     virtual void update() override
@@ -66,8 +50,10 @@ public:
         // const Axis4r& output_controls = controller_->getOutput();
 
         //write the actuator outputs
-        for (uint16_t actuator_index = 0; actuator_index < params_->actuator.actuator_count; ++actuator_index)
-            board_->writeOutput(actuator_index, actuator_outputs_.at(actuator_index));
+        for (uint16_t actuator_index = 0; actuator_index < params_->actuator.actuator_count; ++actuator_index) {
+            float output = actuator_index < actuator_outputs_.size() ? actuator_outputs_[actuator_index] : 0.0f;
+            board_->writeOutput(actuator_index, output);
+        }
 
         comm_link_->update();
     }
@@ -80,6 +66,9 @@ public:
     virtual void overrideActuatorOutputs(const std::vector<float>& values) override
     {
         actuator_outputs_ = values;
+        if (actuator_outputs_.size() < params_->actuator.actuator_count) {
+            actuator_outputs_.resize(params_->actuator.actuator_count, 0.0f);
+        }
     }
 
 private:
