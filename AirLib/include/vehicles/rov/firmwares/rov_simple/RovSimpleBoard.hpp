@@ -21,7 +21,7 @@ namespace airlib
     {
     public:
         RovSimpleBoard(const Rov_simple::Params* params)
-            : params_(params), is_connected_(false), kinematics_(nullptr)
+            : is_connected_(false), params_(params), kinematics_(nullptr)
         {
             actuator_output_.assign(params_->actuator.actuator_count, 0.0f);
             input_channels_.assign(params_->rc.channel_count, 0.0f);
