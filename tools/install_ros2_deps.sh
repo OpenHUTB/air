@@ -17,8 +17,13 @@ fi
 
 sudo apt update && sudo apt install curl gnupg lsb-release
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+# 临时方案:mavros 被官方仓库下架(https://github.com/mavlink/mavros/issues/2293),改用 2026-08-07 快照(含 mavros 2.14.0)
+# 上游重新发布 mavros 后,把下面两行删掉、URL 换回 packages.ros.org 即可
+sudo curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xAD19BAB3CBF125EA" | sudo gpg --dearmor --yes -o /usr/share/keyrings/ros-snapshots-keyring.gpg
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-snapshots-keyring.gpg] http://snapshots.ros.org/humble/2026-08-07/ubuntu $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
 sudo apt-get update
 sudo apt-get install -y ros-$ROS_DISTRO-ros-base

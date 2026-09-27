@@ -2,6 +2,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Misc/FileHelper.h"
+#include "HAL/PlatformProcess.h"
 
 #include "Vehicles/Multirotor/SimModeWorldMultiRotor.h"
 #include "Vehicles/Car/SimModeCar.h"
@@ -338,7 +339,8 @@ bool ASimHUD::getSettingsText(std::string& settingsText)
 {
     return (getSettingsTextFromCommandLine(settingsText) ||
             readSettingsTextFromFile(FPaths::Combine(FPaths::ProjectDir(), TEXT("settings.json")), settingsText) ||
-            readSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::getExecutableFullPath("settings.json").c_str()), settingsText) ||
+            // 使用 UE 原生接口获取可执行模块目录，避免跨层编码转换及 getExecutableFullPath 内部调用 ensureFolder 的目录创建副作用
+            readSettingsTextFromFile(FPaths::Combine(FPlatformProcess::GetModulesDirectory(), TEXT("settings.json")), settingsText) ||
             readSettingsTextFromFile(getLaunchPath("settings.json"), settingsText) ||
             readSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::Settings::getUserDirectoryFullPath("settings.json").c_str()), settingsText));
 }
