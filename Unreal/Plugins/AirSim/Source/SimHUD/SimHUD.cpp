@@ -339,8 +339,7 @@ bool ASimHUD::getSettingsText(std::string& settingsText)
 {
     return (getSettingsTextFromCommandLine(settingsText) ||
             readSettingsTextFromFile(FPaths::Combine(FPaths::ProjectDir(), TEXT("settings.json")), settingsText) ||
-            //  避免使用 libAirLib 的 getExecutableFullPath：其 readlink 会忽略返回值，
-            //  且从不为缓冲区添加 NUL 结尾，从而导致路径损坏。
+            // 使用 UE 原生接口获取可执行模块目录，避免跨层编码转换及 getExecutableFullPath 内部调用 ensureFolder 的目录创建副作用
             readSettingsTextFromFile(FPaths::Combine(FPlatformProcess::GetModulesDirectory(), TEXT("settings.json")), settingsText) ||
             readSettingsTextFromFile(getLaunchPath("settings.json"), settingsText) ||
             readSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::Settings::getUserDirectoryFullPath("settings.json").c_str()), settingsText));
