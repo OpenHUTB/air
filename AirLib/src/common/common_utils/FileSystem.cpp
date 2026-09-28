@@ -126,8 +126,7 @@ std::string FileSystem::getExecutableFolder()
     path = std::string(szPath);
 #else
     char szPath[8192];
-    // readlink 不会将缓冲区以 NUL 结尾；
-    // 应使用返回的长度来构造字符串，否则会包含路径之外的垃圾数据。
+    // readlink does not NUL-terminate the buffer; construct std::string using the returned length.
     ssize_t len = readlink("/proc/self/exe", szPath, sizeof(szPath));
     if (len > 0)
         path = std::string(szPath, len);
