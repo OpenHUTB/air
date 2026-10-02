@@ -1189,7 +1189,7 @@ bool ASimWorldGameMode::GetSettingsText(std::string& settingsText)
 {
     return (GetSettingsTextFromCommandLine(settingsText) ||
             ReadSettingsTextFromFile(FPaths::Combine(FPaths::ProjectDir(), TEXT("settings.json")), settingsText) ||
-            // 使用 UE 原生接口获取可执行模块目录，避免跨层编码转换及 getExecutableFullPath 内部调用 ensureFolder 的目录创建副作用
+            // Use UE native module directory API to avoid encoding conversion and ensureFolder mkdir side effects
             ReadSettingsTextFromFile(FPaths::Combine(FPlatformProcess::GetModulesDirectory(), TEXT("settings.json")), settingsText) ||
             ReadSettingsTextFromFile(GetLaunchPath("settings.json"), settingsText) ||
             ReadSettingsTextFromFile(UTF8_TO_TCHAR(msr::airlib::Settings::Settings::getUserDirectoryFullPath("settings.json").c_str()), settingsText));
