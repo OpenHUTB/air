@@ -12,10 +12,12 @@ from .types import *
 
 
 def string_to_uint8_array(bstr):
-    return np.fromstring(bstr, np.uint8)
-    
+    # np.fromstring(..., dtype) lost its binary mode in NumPy 2.0, so parse the
+    # raw buffer instead. copy() keeps the previous writable-array behaviour.
+    return np.frombuffer(bstr, dtype=np.uint8).copy()
+
 def string_to_float_array(bstr):
-    return np.fromstring(bstr, np.float32)
+    return np.frombuffer(bstr, dtype=np.float32).copy()
     
 def list_to_2d_float_array(flst, width, height):
     return np.reshape(np.asarray(flst, np.float32), (height, width))
@@ -169,8 +171,6 @@ def read_pfm(file):
     
 def write_pfm(file, image, scale=1):
     """ Write a pfm file """
-    file = open(file, 'wb')
-
     color = None
 
     if image.dtype.name != 'float32':
@@ -183,19 +183,16 @@ def write_pfm(file, image, scale=1):
     else:
         raise Exception('Image must have H x W x 3, H x W x 1 or H x W dimensions.')
 
-    file.write('PF\n'.encode('utf-8')  if color else 'Pf\n'.encode('utf-8'))
-    temp_str = '%d %d\n' % (image.shape[1], image.shape[0])
-    file.write(temp_str.encode('utf-8'))
-
     endian = image.dtype.byteorder
 
     if endian == '<' or endian == '=' and sys.byteorder == 'little':
         scale = -scale
 
-    temp_str = '%f\n' % scale
-    file.write(temp_str.encode('utf-8'))
-
-    image.tofile(file)
+    with open(file, 'wb') as afile:
+        afile.write('PF\n'.encode('utf-8') if color else 'Pf\n'.encode('utf-8'))
+        afile.write(('%d %d\n' % (image.shape[1], image.shape[0])).encode('utf-8'))
+        afile.write(('%f\n' % scale).encode('utf-8'))
+        image.tofile(afile)
 
     
 def write_png(filename, image):

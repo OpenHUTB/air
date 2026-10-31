@@ -13,6 +13,16 @@ pip install msgpack-rpc-python
 
 Some examples also requires opencv.
 
+## Tests
+
+The client helpers have offline unit tests that need neither Unreal Engine nor a
+running simulator:
+
+```bash
+cd PythonClient
+python -m unittest discover -s tests -v
+```
+
 ## More Info
 
 More information on AirSim Python APIs can be found at:
