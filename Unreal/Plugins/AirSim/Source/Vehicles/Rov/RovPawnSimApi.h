@@ -10,6 +10,7 @@
 #include "common/common_utils/UniqueValueMap.hpp"
 #include "RovPawnEvents.h"
 #include <future>
+#include <functional>
 
 class RovPawnSimApi : public PawnSimApi
 {
@@ -58,7 +59,37 @@ public:
         return vehicle_api_.get();
     }
 
+    void onKeyboardPwm(const std::vector<float>& pwms);
+
+    // ---------------------------------------------------------------------
+    // OpenHUTB 追加（2026-11-05）：外部位姿源
+    //
+    // 设计依据：docs/decisions/2026-11-05-ROV物理视觉统一改动方案.md
+    //
+    // AirSim 的 rov_physics_body_ 与 MuJoCo 的 AMjArticulation 会同时积分同一台
+    // ROV 的位姿，构成「双所有权」。被调研的 16 个开源仿真系统里没有一个允许
+    // 这种配置（docs/research/开源仿真器物理与视觉统一架构调研.html §7 第 3 条）。
+    //
+    // 这里把 RovPawnSimApi 降级为「纯跟随者」：设置了外部位姿源后，
+    // updateRenderedState() 优先用它，不再读 rov_physics_body_。
+    //
+    // provider 返回 true 表示本帧有有效位姿；返回 false 则回退原逻辑
+    // （例如 MuJoCo 模型尚未编译完成）。
+    //
+    // 注意：provider 给出的是 **UE 世界坐标**（FVector + FQuat），
+    // 由基类的 toPoseFromUnreal() 统一转成 AirSim 的 NED Pose，
+    // 保证坐标转换只在一个地方发生。
+    // ---------------------------------------------------------------------
+    void setExternalPoseProvider(std::function<bool(FVector&, FQuat&)> provider)
+    {
+        external_pose_provider_ = std::move(provider);
+    }
+    void clearExternalPoseProvider() { external_pose_provider_ = nullptr; }
+    bool hasExternalPoseProvider() const { return static_cast<bool>(external_pose_provider_); }
+
 private:
+    std::function<bool(FVector&, FQuat&)> external_pose_provider_;
+
     std::unique_ptr<msr::airlib::RovApiBase> vehicle_api_;
     std::unique_ptr<msr::airlib::RovBodyParams> vehicle_params_;
 

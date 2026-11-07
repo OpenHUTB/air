@@ -25,6 +25,24 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation,
                            FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    void onForwardPressed() { bForward_ = true; }
+    void onForwardReleased() { bForward_ = false; }
+    void onBackwardPressed() { bBackward_ = true; }
+    void onBackwardReleased() { bBackward_ = false; }
+    void onLeftPressed() { bLeft_ = true; }
+    void onLeftReleased() { bLeft_ = false; }
+    void onRightPressed() { bRight_ = true; }
+    void onRightReleased() { bRight_ = false; }
+    void onUpPressed() { bUp_ = true; }
+    void onUpReleased() { bUp_ = false; }
+    void onDownPressed() { bDown_ = true; }
+    void onDownReleased() { bDown_ = false; }
+    void onYawLeftPressed() { bYawLeft_ = true; }
+    void onYawLeftReleased() { bYawLeft_ = false; }
+    void onYawRightPressed() { bYawRight_ = true; }
+    void onYawRightReleased() { bYawRight_ = false; }
 
     //interface
     void initializeForBeginPlay();
@@ -39,6 +57,11 @@ public:
 private: //variables
     UPROPERTY()
     class UStaticMeshComponent* body_mesh_;
+
+    // OpenHUTB 追加（2026-11-05）：MuJoCo 跟随者桥接组件
+    // 让本 Pawn 跟随 MuJoCo 的物理状态，而不是 AirSim 自身的 rov_physics_body_。
+    UPROPERTY()
+    class URovMuJoCoBridge* MuJoCoBridge_;
 
     UPROPERTY()
     class UChildActorComponent* camera_front_right_comp_;
@@ -75,4 +98,14 @@ private: //variables
 
     RovPawnEvents pawn_events_;
     int init_id_;
+
+    bool bForward_ = false;
+    bool bBackward_ = false;
+    bool bLeft_ = false;
+    bool bRight_ = false;
+    bool bUp_ = false;
+    bool bDown_ = false;
+    bool bYawLeft_ = false;
+    bool bYawRight_ = false;
+    bool bHadInput_ = false;
 };

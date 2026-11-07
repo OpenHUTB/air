@@ -79,6 +79,11 @@ public class AirSim : ModuleRules
         bEnableExceptions = true;
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ImageWrapper", "RenderCore", "RHI", "AssetRegistry", "PhysicsCore", "PhysXVehicles", "PhysXVehicleLib", "PhysX", "APEX", "Landscape", "CinematicCamera" });
+
+        // OpenHUTB 追加（2026-11-05）：URovMuJoCoBridge 需要读取 MuJoCo 的 AMjArticulation / UMjBody，
+        // 以便把 AirSim 的 ROV Pawn 改造成 MuJoCo 的纯跟随者。
+        // 见 docs/decisions/2026-11-05-ROV物理视觉统一改动方案.md
+        PublicDependencyModuleNames.Add("URLab");
         PrivateDependencyModuleNames.AddRange(new string[] { "UMG", "Slate", "SlateCore", "Foliage" });
 
         string ProjectDir = Target.ProjectFile != null ? Path.GetDirectoryName(Target.ProjectFile.FullName) : "";

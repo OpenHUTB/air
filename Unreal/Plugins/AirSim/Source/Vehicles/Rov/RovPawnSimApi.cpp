@@ -1,5 +1,6 @@
 #include "RovPawnSimApi.h"
 #include "AirBlueprintLib.h"
+#include "Vehicles/Rov/RovMuJoCoBridge.h"
 #include "vehicles/rov/RovParamsFactory.hpp"
 #include "UnrealSensors/UnrealSensorFactory.h"
 #include <exception>
@@ -40,6 +41,15 @@ void RovPawnSimApi::initialize()
     VectorMath::toEulerianAngle(pose.orientation, pitch, roll, yaw);
     pose.orientation = VectorMath::toQuaternion(0, 0, yaw);
     setPose(pose, false);
+
+    pawn_events_->getKeyboardPwmSignal().connect_member(this, &RovPawnSimApi::onKeyboardPwm);
+}
+
+void RovPawnSimApi::onKeyboardPwm(const std::vector<float>& pwms)
+{
+    if (vehicle_api_) {
+        vehicle_api_->setMotorPWMs(pwms);
+    }
 }
 
 void RovPawnSimApi::pawnTick(float dt)
@@ -63,7 +73,30 @@ void RovPawnSimApi::updateRenderedState(float dt)
     const CollisionInfo& collision_info = getCollisionInfo();
     rov_physics_body_->setCollisionInfo(collision_info);
 
-    last_phys_pose_ = rov_physics_body_->getPose();
+    // OpenHUTB 修改（2026-11-05）：外部位姿源优先
+    // 见 docs/decisions/2026-11-05-ROV物理视觉统一改动方案.md
+    // 设置外部位姿源（MuJoCo）后，本类退化为纯跟随者，不再用 AirSim 自身物理体的状态，
+    // 从而消除「两个求解器同时拥有同一台 ROV 位姿」的双所有权问题。
+    // 坐标转换统一走基类的 toPoseFromUnreal()，这里不做任何手工换算。
+    FVector ExternalPos;
+    FQuat ExternalRot;
+    bool bHasExternalPose = false;
+
+    // 优先用实例级 provider（测试或定制场景）
+    if (external_pose_provider_) {
+        bHasExternalPose = external_pose_provider_(ExternalPos, ExternalRot);
+    }
+    // 其次用 URovMuJoCoBridge 注册的全局 provider（正式运行时走这条）
+    if (!bHasExternalPose && URovMuJoCoBridge::ExternalPoseProvider) {
+        bHasExternalPose = URovMuJoCoBridge::ExternalPoseProvider(ExternalPos, ExternalRot);
+    }
+
+    if (bHasExternalPose) {
+        last_phys_pose_ = toPoseFromUnreal(ExternalPos, ExternalRot);
+    }
+    else {
+        last_phys_pose_ = rov_physics_body_->getPose();
+    }
 
     collision_response = rov_physics_body_->getCollisionResponseInfo();
 

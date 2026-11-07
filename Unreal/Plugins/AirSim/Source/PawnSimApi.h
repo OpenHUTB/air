@@ -106,6 +106,15 @@ protected: //additional interface for derived class
     msr::airlib::Kinematics* getKinematics();
     msr::airlib::Environment* getEnvironment();
 
+    // OpenHUTB 追加（2026-11-05）：把 UE 世界坐标转成 AirSim 的 NED Pose。
+    // 派生类（RovPawnSimApi）需要它来接收外部物理引擎（MuJoCo）提供的位姿，
+    // 保证坐标转换只有一处实现——复用已有的 private toPose()。
+    // 依据：docs/decisions/2026-11-05-ROV物理视觉统一改动方案.md
+    PawnSimApi::Pose toPoseFromUnreal(const FVector& u_position, const FQuat& u_quat) const
+    {
+        return toPose(u_position, u_quat);
+    }
+
 public: //Unreal specific methods
     PawnSimApi(const Params& params);
 
