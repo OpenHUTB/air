@@ -147,14 +147,28 @@ public:
     /**
      * 浮力倍率。1.0 = 严格按 ρ·g·V。
      *
-     * 当前默认 3.2 是为了补偿一个已知的质量归属 bug：XML 里 rov_body 的
-     * mass="150.0" 被导入器分到了 gripper_base_mount 上，导致 ROV 本体变成
-     * 438 kg、整机 612.9 kg，而排水体积只有 0.192 m³。
-     * 3.2 ≈ 612.9 / (1000 × 0.192)，配平到中性浮态。
-     * 质量 bug 修好后应改回 1.0。
+     * 历史：XML 里 rov_body 的 mass="150.0" 曾被导入器分到 gripper_base_mount 上
+     * （夹爪网格单位是 mm，被当成 cm，放大 10 倍 → 体积 ×1000 → 150 kg），
+     * 整机 612.9 kg，只能靠 3.19 的倍率硬配到中性。
+     * 2026-11-08 已修：夹爪网格按 cm 重导、并给 gripper_base_mount 写死 0.15 kg，
+     * 整机回到 460.5 kg。现在按 0.192 m³ 排水算，中性所需倍率 ≈ 2.34。
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Fluid")
-    float BuoyancyScale = 3.1923f;
+    float BuoyancyScale = 2.34f;
+
+    /**
+     * 机械臂排水体积（升）。
+     *
+     * UR5e 七个连杆的 OBJ 用散度定理实测合计 **11.73 L**，2F85 夹爪约 0.35 L，
+     * 取 12.1 L。浮力作用在臂的合成质心处，相当于给臂绑浮力块。
+     * 设为 0 可关闭，用来做对照实验。
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Fluid")
+    float ArmBuoyancyVolume = 12.1f;
+
+    /** 机械臂浮力系数，1.0 = 完全按真实排水体积；0.9 表示臂仍有 10% 净重。 */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Fluid")
+    float ArmBuoyancyScale = 1.0f;
 
     /**
      * 浮心相对重心的高度（m），沿机体系 +Z。
@@ -214,15 +228,25 @@ public:
 
     /** 姿态闭环带宽（rad/s）。增益按 I·ω² 自动缩放，换惯量不用重调。 */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
-    float AttitudeBandwidth = 2.5f;
+    float AttitudeBandwidth = 1.0f;
 
     /** 阻尼比。1.0 = 临界阻尼，不超调。 */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
     float AttitudeZeta = 0.8f;
 
+    /**
+     * 姿态积分增益（rad/s per rad·s）。
+     *
+     * 纯 P 遇到恒定力矩（质心与浮心不重合、机械臂残余重量）会停在固定倾角上，
+     * 实测曾达到 roll −28°。积分项把它消掉，积分值限幅 ±2.0 rad/s。
+     * 设 0 可退回纯 P 做对照。
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
+    float AttitudeIntegralGain = 0.5f;
+
     /** 积分增益系数（相对 I·ω³）。用于消除恒定扰动造成的稳态误差。 */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
-    float AttitudeIntegralFactor = 0.5f;
+    float AttitudeIntegralFactor = 0.0f;
 
     /** 目标航向（度）。启动时自动捕获当前航向。 */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
@@ -231,6 +255,36 @@ public:
     /** 航向调整速率（度/秒）。按住 ← / → 连续改变目标航向。 */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
     float YawRateDegPerSec = 60.0f;
+
+    /**
+     * 机械臂静力矩配平（机体系，N·m）。**默认 0，实测常值前馈不成立**。
+     *
+     * 2026-11-08 实测：不加前馈时稳态 qfrc 俯仰约 −166 ~ −215 N·m（机械臂还在缓慢下沉，
+     * 数值本身在漂）；加 −215 N·m 前馈后反而变成 −241 N·m。原因是臂的重力力矩
+     * 随 ROV 俯仰角变化，常值前馈只会把平衡点挪到另一个俯仰角，抵不掉。
+     * 真正的配平要动物理：臂浮力块 / 压载 / 把臂收进重心。这里保留接口供以后试。
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
+    float TrimTorquePitch = 0.0f;
+
+    /** 横滚方向配平力矩（N·m），用法同 TrimTorquePitch。 */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
+    float TrimTorqueRoll = 0.0f;
+    /** 水平（roll/pitch）回调带宽 rad/s */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
+    float LevelBandwidth = 1.5f;
+
+    /** 水平阻尼比 */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
+    float LevelZeta = 0.8f;
+
+    /** 航向回调带宽 rad/s */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
+    float YawBandwidth = 1.0f;
+
+    /** 航向阻尼比 */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Attitude")
+    float YawZeta = 1.0f;
 
     // ---------------------------- 洋流 ----------------------------
 
@@ -247,7 +301,17 @@ public:
      * 所以这里作为**独立受力项**补一个可调角阻尼，与流体模型叠加。
      */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Fluid")
-    float AngularDampingCoeff = 10.0f;
+    float AngularDampingCoeff = 0.0f;   // 改由 dof_damping 提供
+
+    /**
+     * 转动自由度阻尼（N·m·s/rad），写进 MuJoCo 的 `dof_damping[3..5]`。
+     *
+     * 这是**水阻尼**里 MuJoCo 椭球模型低估的那部分（导流罩、推进器导管、
+     * 外挂设备的形式阻力）。数值由 `-RovSpinTest` 的 spin-down 实验辨识，
+     * 不是拍脑袋的占位值。<= 0 表示退回「0.5 × 平均惯量」的兜底值。
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROV|MuJoCo|Fluid")
+    float AngularDofDamping = 13.0f;
 
     /**
      * 是否启用洋流（三层级联：Gauss-Markov + 分层 + 湍流）。
@@ -326,6 +390,16 @@ private:
     std::atomic<double> CachedBuoyancy{0.0};
 
     std::atomic<int32> CachedBodyId{-1};
+
+    /**
+     * 控制指令的时间戳（MuJoCo 仿真时间）。
+     *
+     * 控制力矩在**游戏线程**按帧算，物理在**独立线程**按 500 Hz 跑。
+     * 打包版启动时有一段长卡顿（着色器编译），游戏线程几秒不更新，
+     * 上一帧的力矩会被冻结着一直施加 —— 实测 ROV 在 5 秒内被甩到 159°。
+     * 物理线程据此判断指令是否过期，过期就把推力/力矩归零。
+     */
+    std::atomic<double> CachedControlTime{0.0};
 
     /** pre-step 回调只注册一次。 */
     bool bControlCallbackRegistered = false;

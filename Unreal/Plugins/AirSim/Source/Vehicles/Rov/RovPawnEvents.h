@@ -22,10 +22,13 @@ public: //types
     };
 
     typedef common_utils::Signal<const std::vector<RotorTiltableInfo>&> ActuatorsSignal;
+    typedef common_utils::Signal<const std::vector<float>&> KeyboardPwmSignal;
 
 public:
     ActuatorsSignal& getActuatorSignal();
+    KeyboardPwmSignal& getKeyboardPwmSignal();
 
 private:
     ActuatorsSignal actuator_signal_;
+    KeyboardPwmSignal keyboard_pwm_signal_;
 };
