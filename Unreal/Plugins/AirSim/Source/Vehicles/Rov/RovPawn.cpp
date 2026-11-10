@@ -3,14 +3,19 @@
 #include "Components/ChildActorComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "AirBlueprintLib.h"
+#include "Vehicles/Rov/RovMuJoCoBridge.h"
 #include "common/CommonStructs.hpp"
 #include "common/Common.hpp"
 
 ARovPawn::ARovPawn()
 {
+    AutoPossessPlayer = EAutoReceiveInput::Player0;
     init_id_ = pawn_events_.getActuatorSignal().connect_member(this, &ARovPawn::setRotorRenderedStates);
 
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+
+    // MuJoCo 位姿跟随桥接
+    MuJoCoBridge_ = CreateDefaultSubobject<URovMuJoCoBridge>(TEXT("MuJoCoBridge"));
 
     body_mesh_ = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
     body_mesh_->SetupAttachment(RootComponent);
@@ -128,10 +133,82 @@ void ARovPawn::initializeForBeginPlay()
     camera_bottom_center_ = c_bot ? Cast<APIPCamera>(c_bot->GetChildActor()) : nullptr;
 }
 
+void ARovPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+    if (!PlayerInputComponent) return;
+
+    PlayerInputComponent->BindKey(EKeys::W, IE_Pressed, this, &ARovPawn::onForwardPressed);
+    PlayerInputComponent->BindKey(EKeys::W, IE_Released, this, &ARovPawn::onForwardReleased);
+    PlayerInputComponent->BindKey(EKeys::Up, IE_Pressed, this, &ARovPawn::onForwardPressed);
+    PlayerInputComponent->BindKey(EKeys::Up, IE_Released, this, &ARovPawn::onForwardReleased);
+
+    PlayerInputComponent->BindKey(EKeys::S, IE_Pressed, this, &ARovPawn::onBackwardPressed);
+    PlayerInputComponent->BindKey(EKeys::S, IE_Released, this, &ARovPawn::onBackwardReleased);
+    PlayerInputComponent->BindKey(EKeys::Down, IE_Pressed, this, &ARovPawn::onBackwardPressed);
+    PlayerInputComponent->BindKey(EKeys::Down, IE_Released, this, &ARovPawn::onBackwardReleased);
+
+    PlayerInputComponent->BindKey(EKeys::Q, IE_Pressed, this, &ARovPawn::onLeftPressed);
+    PlayerInputComponent->BindKey(EKeys::Q, IE_Released, this, &ARovPawn::onLeftReleased);
+    PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &ARovPawn::onRightPressed);
+    PlayerInputComponent->BindKey(EKeys::E, IE_Released, this, &ARovPawn::onRightReleased);
+
+    PlayerInputComponent->BindKey(EKeys::A, IE_Pressed, this, &ARovPawn::onYawLeftPressed);
+    PlayerInputComponent->BindKey(EKeys::A, IE_Released, this, &ARovPawn::onYawLeftReleased);
+    PlayerInputComponent->BindKey(EKeys::Left, IE_Pressed, this, &ARovPawn::onYawLeftPressed);
+    PlayerInputComponent->BindKey(EKeys::Left, IE_Released, this, &ARovPawn::onYawLeftReleased);
+
+    PlayerInputComponent->BindKey(EKeys::D, IE_Pressed, this, &ARovPawn::onYawRightPressed);
+    PlayerInputComponent->BindKey(EKeys::D, IE_Released, this, &ARovPawn::onYawRightReleased);
+    PlayerInputComponent->BindKey(EKeys::Right, IE_Pressed, this, &ARovPawn::onYawRightPressed);
+    PlayerInputComponent->BindKey(EKeys::Right, IE_Released, this, &ARovPawn::onYawRightReleased);
+
+    PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &ARovPawn::onUpPressed);
+    PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Released, this, &ARovPawn::onUpReleased);
+    PlayerInputComponent->BindKey(EKeys::PageUp, IE_Pressed, this, &ARovPawn::onUpPressed);
+    PlayerInputComponent->BindKey(EKeys::PageUp, IE_Released, this, &ARovPawn::onUpReleased);
+
+    PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ARovPawn::onDownPressed);
+    PlayerInputComponent->BindKey(EKeys::C, IE_Released, this, &ARovPawn::onDownReleased);
+    PlayerInputComponent->BindKey(EKeys::PageDown, IE_Pressed, this, &ARovPawn::onDownPressed);
+    PlayerInputComponent->BindKey(EKeys::PageDown, IE_Released, this, &ARovPawn::onDownReleased);
+}
+
 void ARovPawn::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
     pawn_events_.getPawnTickSignal().emit(DeltaSeconds);
+
+    float fwd = (bForward_ ? 1.0f : 0.0f) - (bBackward_ ? 1.0f : 0.0f);
+    float lat = (bRight_ ? 1.0f : 0.0f) - (bLeft_ ? 1.0f : 0.0f);
+    float vert = (bDown_ ? 1.0f : 0.0f) - (bUp_ ? 1.0f : 0.0f);
+    float yaw = (bYawRight_ ? 1.0f : 0.0f) - (bYawLeft_ ? 1.0f : 0.0f);
+
+    bool bHasInput = (std::abs(fwd) > 0.01f || std::abs(lat) > 0.01f || std::abs(vert) > 0.01f || std::abs(yaw) > 0.01f);
+
+    if (bHasInput) {
+        std::vector<float> pwms(8, 0.0f);
+        pwms[0] = vert;
+        pwms[1] = vert;
+        pwms[2] = vert;
+        pwms[3] = vert;
+        pwms[4] += fwd * 1.0f + lat * -1.0f + yaw * 1.0f;
+        pwms[5] += fwd * 1.0f + lat * 1.0f + yaw * -1.0f;
+        pwms[6] += fwd * -1.0f + lat * 1.0f + yaw * -1.0f;
+        pwms[7] += fwd * -1.0f + lat * -1.0f + yaw * 1.0f;
+
+        for (int i = 0; i < 8; ++i) {
+            pwms[i] = FMath::Clamp(pwms[i], -1.0f, 1.0f);
+        }
+
+        pawn_events_.getKeyboardPwmSignal().emit(pwms);
+        bHadInput_ = true;
+    }
+    else if (bHadInput_) {
+        std::vector<float> zero_pwms(8, 0.0f);
+        pawn_events_.getKeyboardPwmSignal().emit(zero_pwms);
+        bHadInput_ = false;
+    }
 }
 
 void ARovPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)

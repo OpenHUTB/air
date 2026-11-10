@@ -5,6 +5,8 @@
 #define msr_airlib_rov_body_params_hpp
 
 #include "common/Common.hpp"
+#include "common/Settings.hpp"
+#include "common/AirSimSettings.hpp"
 #include "RotorTiltableParams.hpp"
 #include "AeroParams.hpp"
 #include "sensors/SensorCollection.hpp"
@@ -60,6 +62,16 @@ namespace airlib
             real_T restitution = 0.55f; // value of 1 would result in perfectly elastic collisions, 0 would be completely inelastic.
             real_T friction = 0.5f;
             AeroParams aero_params;
+
+            // Underwater Fossen Dynamics & Depth Safety Parameters
+            real_T z_bed = -30.0f; // Seabed depth limit (meters, default -30m)
+            real_T bed_stiffness = 2000.0f; // Soft boundary spring stiffness kp (N/m)
+            real_T bed_damping = 300.0f; // Soft boundary contact damping kd (N*s/m)
+            real_T bed_contact_margin = 0.5f; // Cushion transition margin before bed (m)
+            real_T bed_clamp_margin = 0.3f; // Hard clamp threshold margin (m)
+            bool enable_depth_clamp = true; // Whether seabed depth safety boundary is active
+            bool enable_neutral_buoyancy = true; // Whether neutral buoyancy model is active
+            bool enable_hydrodynamic_damping = true; // Whether fluid damping is active
         };
 
     protected: //must override by derived class
@@ -76,6 +88,8 @@ namespace airlib
             sensors_.clear();
 
             setupParams();
+
+            loadSettings(vehicle_setting);
 
             addSensorsFromSettings(vehicle_setting);
         }
@@ -105,6 +119,50 @@ namespace airlib
         }
 
     protected:
+        void loadSettings(const AirSimSettings::VehicleSetting* vehicle_setting)
+        {
+            if (vehicle_setting && !vehicle_setting->vehicle_name.empty()) {
+                Settings vehicles_child;
+                if (Settings::singleton().getChild("Vehicles", vehicles_child)) {
+                    Settings child;
+                    if (vehicles_child.getChild(vehicle_setting->vehicle_name, child)) {
+                        readParamSettings(child);
+                    }
+                }
+            }
+            // Also check global settings root
+            readParamSettings(Settings::singleton());
+        }
+
+        void readParamSettings(const Settings& settings)
+        {
+            if (settings.hasKey("ZBed"))
+                params_.z_bed = settings.getFloat("ZBed", params_.z_bed);
+            else if (settings.hasKey("z_bed"))
+                params_.z_bed = settings.getFloat("z_bed", params_.z_bed);
+            else if (settings.hasKey("Z_bed"))
+                params_.z_bed = settings.getFloat("Z_bed", params_.z_bed);
+            else if (settings.hasKey("BedZ"))
+                params_.z_bed = settings.getFloat("BedZ", params_.z_bed);
+
+            if (settings.hasKey("EnableDepthClamp"))
+                params_.enable_depth_clamp = settings.getBool("EnableDepthClamp", params_.enable_depth_clamp);
+            if (settings.hasKey("BedStiffness"))
+                params_.bed_stiffness = settings.getFloat("BedStiffness", params_.bed_stiffness);
+            if (settings.hasKey("BedDamping"))
+                params_.bed_damping = settings.getFloat("BedDamping", params_.bed_damping);
+            if (settings.hasKey("BedContactMargin"))
+                params_.bed_contact_margin = settings.getFloat("BedContactMargin", params_.bed_contact_margin);
+            if (settings.hasKey("BedClampMargin"))
+                params_.bed_clamp_margin = settings.getFloat("BedClampMargin", params_.bed_clamp_margin);
+            if (settings.hasKey("EnableNeutralBuoyancy"))
+                params_.enable_neutral_buoyancy = settings.getBool("EnableNeutralBuoyancy", params_.enable_neutral_buoyancy);
+            if (settings.hasKey("EnableHydrodynamicDamping"))
+                params_.enable_hydrodynamic_damping = settings.getBool("EnableHydrodynamicDamping", params_.enable_hydrodynamic_damping);
+            if (settings.hasKey("OffZ"))
+                params_.off_z = settings.getFloat("OffZ", static_cast<float>(params_.off_z));
+        }
+
         //TODO: is there a way to read params in from vehicle_setting?
         /*
         static void computeInertiaMatrix(Matrix3x3r& inertia, const Vector3r& body_box, const vector<RotorPose>& rotor_poses,
@@ -297,6 +355,16 @@ namespace airlib
             params.damping_angular_q.x() = -1.55f;
             params.damping_angular_q.y() = -1.55f;
             params.damping_angular_q.z() = -1.55f;
+
+            // Safe depth limit and seabed contact parameters
+            params.z_bed = -30.0f;
+            params.bed_stiffness = 2000.0f;
+            params.bed_damping = 300.0f;
+            params.bed_contact_margin = 0.5f;
+            params.bed_clamp_margin = 0.3f;
+            params.enable_depth_clamp = true;
+            params.enable_neutral_buoyancy = true;
+            params.enable_hydrodynamic_damping = true;
 
             /*                  
             params.body_box.x() = 0.180f;

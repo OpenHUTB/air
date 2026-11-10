@@ -10,6 +10,7 @@
 #include "common/common_utils/UniqueValueMap.hpp"
 #include "RovPawnEvents.h"
 #include <future>
+#include <functional>
 
 class RovPawnSimApi : public PawnSimApi
 {
@@ -58,7 +59,22 @@ public:
         return vehicle_api_.get();
     }
 
+    void onKeyboardPwm(const std::vector<float>& pwms);
+
+    // 外部位姿源。设置后 updateRenderedState() 优先使用它，不再读取
+    // rov_physics_body_，避免与外部物理引擎重复积分位姿。
+    // provider 返回 false 时回退原有逻辑；坐标为 UE 世界系，
+    // 由基类 toPoseFromUnreal() 统一转换为 NED。
+    void setExternalPoseProvider(std::function<bool(FVector&, FQuat&)> provider)
+    {
+        external_pose_provider_ = std::move(provider);
+    }
+    void clearExternalPoseProvider() { external_pose_provider_ = nullptr; }
+    bool hasExternalPoseProvider() const { return static_cast<bool>(external_pose_provider_); }
+
 private:
+    std::function<bool(FVector&, FQuat&)> external_pose_provider_;
+
     std::unique_ptr<msr::airlib::RovApiBase> vehicle_api_;
     std::unique_ptr<msr::airlib::RovBodyParams> vehicle_params_;
 
