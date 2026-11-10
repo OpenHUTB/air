@@ -40,6 +40,3 @@ int main()
 
     return failed == 0 ? 0 : 1;
 }
-
-
-

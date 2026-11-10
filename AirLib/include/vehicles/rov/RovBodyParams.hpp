@@ -64,14 +64,14 @@ namespace airlib
             AeroParams aero_params;
 
             // Underwater Fossen Dynamics & Depth Safety Parameters
-            real_T z_bed = -30.0f;                    // Seabed depth limit (meters, default -30m)
-            real_T bed_stiffness = 2000.0f;           // Soft boundary spring stiffness kp (N/m)
-            real_T bed_damping = 300.0f;              // Soft boundary contact damping kd (N*s/m)
-            real_T bed_contact_margin = 0.5f;         // Cushion transition margin before bed (m)
-            real_T bed_clamp_margin = 0.3f;           // Hard clamp threshold margin (m)
-            bool enable_depth_clamp = true;           // Whether seabed depth safety boundary is active
-            bool enable_neutral_buoyancy = true;      // Whether neutral buoyancy model is active
-            bool enable_hydrodynamic_damping = true;  // Whether fluid damping is active
+            real_T z_bed = -30.0f; // Seabed depth limit (meters, default -30m)
+            real_T bed_stiffness = 2000.0f; // Soft boundary spring stiffness kp (N/m)
+            real_T bed_damping = 300.0f; // Soft boundary contact damping kd (N*s/m)
+            real_T bed_contact_margin = 0.5f; // Cushion transition margin before bed (m)
+            real_T bed_clamp_margin = 0.3f; // Hard clamp threshold margin (m)
+            bool enable_depth_clamp = true; // Whether seabed depth safety boundary is active
+            bool enable_neutral_buoyancy = true; // Whether neutral buoyancy model is active
+            bool enable_hydrodynamic_damping = true; // Whether fluid damping is active
         };
 
     protected: //must override by derived class

@@ -484,14 +484,12 @@ namespace airlib
         Vector3r force_damping(
             -std::abs(p.damping_linear.x()) * vel_body.x() - std::abs(p.damping_linear_q.x()) * std::abs(vel_body.x()) * vel_body.x(),
             -std::abs(p.damping_linear.y()) * vel_body.y() - std::abs(p.damping_linear_q.y()) * std::abs(vel_body.y()) * vel_body.y(),
-            -std::abs(p.damping_linear.z()) * vel_body.z() - std::abs(p.damping_linear_q.z()) * std::abs(vel_body.z()) * vel_body.z()
-        );
+            -std::abs(p.damping_linear.z()) * vel_body.z() - std::abs(p.damping_linear_q.z()) * std::abs(vel_body.z()) * vel_body.z());
 
         Vector3r torque_damping(
             -std::abs(p.damping_angular.x()) * omega_body.x() - std::abs(p.damping_angular_q.x()) * std::abs(omega_body.x()) * omega_body.x(),
             -std::abs(p.damping_angular.y()) * omega_body.y() - std::abs(p.damping_angular_q.y()) * std::abs(omega_body.y()) * omega_body.y(),
-            -std::abs(p.damping_angular.z()) * omega_body.z() - std::abs(p.damping_angular_q.z()) * std::abs(omega_body.z()) * omega_body.z()
-        );
+            -std::abs(p.damping_angular.z()) * omega_body.z() - std::abs(p.damping_angular_q.z()) * std::abs(omega_body.z()) * omega_body.z());
 
         wrench.force = force_damping;
         wrench.torque = torque_damping;
